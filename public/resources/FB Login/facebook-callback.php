@@ -2,10 +2,19 @@
 	if (!session_id()) {
 		session_start();
 	}
-	require_once('facebook/src/Facebook/autoload.php');
+
+
+
+	require_once('../../../../../../wp-load.php');
+	require_once('../../../includes/UPPUmbrellaPersonalProfile.php');
+	require_once('../facebook/src/Facebook/autoload.php');
+	$uPPUmbrellaPersonalProfile = new App\UPPUmbrellaPersonalProfile();
+
+
+
 	$fb = new Facebook\Facebook([
-			'app_id' => '1126710417414825', // Replace {app-id} with your app id
-			'app_secret' => '1a2140fae9e93082e3a2a536435da45e',
+			'app_id' => '1809109289321551', // Replace {app-id} with your app id
+			'app_secret' => 'c708e1816369948058edebc76df52d9d',
 			'default_graph_version' => 'v2.7',
 		]);
 	$helper = $fb->getRedirectLoginHelper();
@@ -40,7 +49,7 @@
 		$tokenMetadata = $oAuth2Client->debugToken($accessToken);
 		
 		// Validation (these will throw FacebookSDKException's when they fail)
-		$tokenMetadata->validateAppId('1126710417414825'); // Replace {app-id} with your app id
+		$tokenMetadata->validateAppId('1809109289321551'); // Replace {app-id} with your app id
 		// If you know the user ID this access token belongs to, you can validate it here
 		
 		$tokenMetadata->validateExpiration();
@@ -68,13 +77,25 @@
 		  echo 'Facebook SDK returned an error: ' . $e->getMessage();
 		  exit;
 		}
-		$user 		= $response->getGraphUser();
-		$_SESSION['fb_id']	= $user['id'];
-		$_SESSION['fb_ea']	= $user['email'];
-		$_SESSION['fb_fn']	= $user['name'];
-		//$_SESSION['fb_pp']	= $user['picture'];
-		//header('Location: facebook-view.php');
-		
+
+		$user = $response->getGraphUser();
+
+		$faceBookInformation = [
+				'fb_id' => $user['id'],
+				'fb_email' => $user['email'],
+				'fb_fn' => $user['name'],
+				'fb_profile_pic' => "http://graph.facebook.com/" . $user['id'] . "/picture",
+				'fb_authenticated' => true,
+		];
+
+		$uPPUmbrellaPersonalProfile->setSessionFacebookProfileVariables($faceBookInformation);
+		$uPPUmbrellaPersonalProfile->saveFaceBookInformationToWpOption($faceBookInformation);
+
+
+	 	// print "<pre>";  
+	 	// 	print_r($_SESSION['personal_profile']);  
+	 	// print "</pre>";  
+
 	}
 ?> 
 <script language="javascript">

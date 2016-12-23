@@ -1,0 +1,35 @@
+&lt;script src=&quot;https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;http://testing.umbrellasupport.co.uk/wp-content/themes/umbrella-portal/js/clients/68805.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+	$(document).ready(function( ) {
+		var Vclientid 	= '68805';
+		var Vhashid	= '9fa0d696eae423fb3dd8c9b07890a31b';
+		var parts = window.location.hostname.split();
+		var subdomain = parts.shift( );
+		var upperleveldomain = parts.join();
+		$.ajax({
+		   type: &quot;POST&quot;, // HTTP method POST or GET
+		   url: &quot;http://testing.umbrellasupport.co.uk/chat-process/&quot;, //Where to make Ajax calls
+		   //dataType:&quot;text&quot;, // Data type, HTML, json etc.
+		   data:{
+			   clientid:Vclientid,
+			   hashid:Vhashid,
+			   domainn:upperleveldomain
+		   },
+		   success:function(response){
+			 //responseaction
+			$('#chatcontainer').html(response);
+			if(response == '&lt;img src=&quot;http://testing.umbrellasupport.co.uk/wp-content/uploads/2016/07/NotAllowed.png&quot;&gt;'){
+				
+			}else{
+				load_chat( );
+			}
+		   },
+		   error:function (xhr, ajaxOptions, thrownError){
+			alert(&quot;Error: &quot; + thrownError);
+		   }
+		});
+	});
+&lt;/script&gt;
+
+&lt;div id=&quot;chatcontainer&quot;&gt;&lt;/div&gt;

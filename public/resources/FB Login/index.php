@@ -41,7 +41,9 @@
 		</style>
 	</head>
 	<body>
-		<?php if(isset($_SESSION['fb_id'])){ ?>
+		<?php 
+			$displayResult = false; 
+			if(isset($_SESSION['fb_id']) and $displayResult == true) { ?>
 
 			<div class="row user-fb-wrapper" style="">
 				<div class="col-md-3 col-sm-3 col-xs-3" >
@@ -65,7 +67,7 @@
 					var myWindow;
 					var cInterval;
 					function fbauth(){
-						myWindow  = window.open('http://livewebchatcode.com/facebook-auth.php', '_blank', 'height=620, width=620');
+						myWindow  = window.open('http://testing.umbrellasupport.co.uk/wp-content/plugins/umbrella-personal-profile/public/resources/FB%20Login/facebook-auth.php', '_blank', 'height=620, width=620');
 						cInterval = setInterval(function(){ 
 							if(myWindow.closed){
 								window.location.reload();
@@ -76,12 +78,9 @@
 				</script>
 				
 				<div class="col-md-12">
-					<div class="form-group text-center">
-						<label class="control-label">Login with facebook</label>
-						<?php			
-							echo ' <a href="#" id="fblogin" onClick="fbauth()"> <img height="19px" src="http://livewebchatcode.com/facebook/fb-login-button-v1.png"></a>';
-						?>
-
+					<div class="form-group">
+						<label class="control-label">Authenticate Account with Facebook</label><br>
+						<a href="#" id="fblogin" onclick="fbauth()"> <img height="19px" src="http://livewebchatcode.com/facebook/fb-login-button-v1.png"></a>
 					</div>
 				</div>
 			</div>

@@ -1,0 +1,37 @@
+Update for December 21, 2016
+
+Read documentation
+Setup new plugin
+Ask and collaborate with Arvin for the facebook connect authentication
+Give my account fb account to Arvin in order for me to get access with facebook api
+Change the api and secret with in authentication and callback files
+Add facebook login button
+setup facebook api shared by arvin
+Retrieve API key and Secret key from facebook api and setup it to personal profile info
+debug api key and secret key to see if its working
+when user successfully authenticated set retrieve the picture, name and email
+
+--------------------------------------------------------------
+
+Marvin is the one who created that part as Arvin response,
+he is off now will see tomorrow.
+
+
+
+
+
+Update for December 23, 2016
+create class for the facebook authentication
+set facebook data to be stored in the system when partner authenticated to facebook
+save facebook data to database, this will remember the specific partner that they are authenticated with facebook already
+add popup when hit delete icon
+create a design with facebook image, full name and email
+when popup show and hit yes, the action will delete the session stored in the system and delete the stored facebook data
+create a function to delete session and database data
+separate function that should be retrieved specifically
+arrange and setup html and styling for the popup
+arrange and setup html and styling for the display of facebook profile pic, fullname and email
+
+-------------------------------------------
+
+continue with personal data tomorrow..

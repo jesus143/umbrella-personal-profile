@@ -4,5 +4,17 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library">
+      <library name="PHARS">
+        <CLASSES>
+          <root url="phar://$MODULE_DIR$/test-theme/page-template/customclass/htmltopdf/composer.phar/" />
+          <root url="phar://$MODULE_DIR$/test-theme/page-template/gocardless-php/vendor/phpdocumentor/fileset/tests/data/test.phar/" />
+        </CLASSES>
+        <SOURCES>
+          <root url="phar://$MODULE_DIR$/test-theme/page-template/customclass/htmltopdf/composer.phar/" />
+          <root url="phar://$MODULE_DIR$/test-theme/page-template/gocardless-php/vendor/phpdocumentor/fileset/tests/data/test.phar/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
   </component>
 </module>

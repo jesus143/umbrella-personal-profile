@@ -1,0 +1,619 @@
+@charset "utf-8";
+@import url("../css/home-boxes.css");
+/* Simple fluid media
+   Note: Fluid media requires that you remove the media's height and width attributes from the HTML
+   http://www.alistapart.com/articles/fluid-images/ 
+*/
+img, object, embed, video {
+	max-width: 100%;
+}
+/* IE 6 does not support max-width so default to width 100% */
+.ie6 img {
+	width:100%;
+}
+
+/*
+	Dreamweaver Fluid Grid Properties
+	----------------------------------
+	dw-num-cols-mobile:		5;
+	dw-num-cols-tablet:		8;
+	dw-num-cols-desktop:	10;
+	dw-gutter-percentage:	25;
+	
+	Inspiration from "Responsive Web Design" by Ethan Marcotte 
+	http://www.alistapart.com/articles/responsive-web-design
+	
+	and Golden Grid System by Joni Korpi
+	http://goldengridsystem.com/
+*/
+
+/* Mobile Layout: 480px and below. */
+
+.gridContainer {
+	width: 100%;
+	max-width: 100%;
+	padding-left: 0;
+	padding-right: 0;
+	margin: auto;
+}
+#outside-wrapper {
+	background: #fff none repeat scroll 0 0;
+    clear: both;
+    display: table;
+    margin: 0 auto;
+    width: 320px;
+}
+#header {
+	clear: both;
+    display: block;
+    float: none;
+    margin: 0 auto;
+    width: 320px;
+}
+#header-top {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+#header-left {
+	clear: both;
+    display: block;
+    float: none;
+    margin: 20px auto;
+    width: 90%;
+}
+#header-right {
+	clear: both;
+    display: block;
+    float: none;
+    margin: 0 auto;
+    width: 90%;
+}
+#nav {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+.menu-divider {
+	color:#fff;
+	display: display: inline !important;;
+}
+.menu-divider:last-child {
+	display:none !important;
+}
+#home-content {
+	clear: both;
+    display: block;
+    float: none;
+    margin: 0 auto;
+    width: 320px;
+}
+.locker,#page-content {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 90%;
+	display: block;
+}
+#main-buttons {
+	clear: both;
+    display: block;
+    float: none;
+    margin-left: 0;
+    width: 91.5%;
+}
+#home-ranking {
+	clear: both;
+    display: block;
+    float: left;
+    margin-left: 0;
+    width: 90.5%;
+}
+.home-ranking-box {
+    height: 392.5px;
+    margin: 1px 1px 3px;
+    width: 100%;
+}
+#social-section {
+	clear: both;
+    display: block;
+    float: left;
+    margin: 0 4.7%;
+    width: 90.5%;
+}
+#home-social-1 {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+#home-social-2 {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+#home-social-3 {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+#footer {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+#footer-nav {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+#footer-nav ul li a {
+    padding: 0 29.5px;
+}
+#footer-copyright {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+
+/* Tablet Layout: 481px to 768px. Inherits styles from: Mobile Layout. */
+
+@media only screen and (min-width: 481px) {
+.gridContainer {
+	width: 100%;
+	max-width: 100%;
+	padding-left: 0;
+	padding-right: 0;
+	margin: auto;
+}
+#outside-wrapper {
+	background: #fff none repeat scroll 0 0;
+    clear: both;
+    display: table;
+    margin: 0 auto;
+    width: 481px;
+}
+#header {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+#header-top {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+#header-left {
+	clear: both;
+    display: block;
+    float: none;
+    margin: 0 auto;
+    width: 94%;
+}
+#header-right {
+	clear: none;
+    display: block;
+    float: none;
+    margin: 0 auto;
+    width: 94%;
+}
+#nav {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+.menu-divider {
+	color:#fff;
+	display: display: inline !important;;
+}
+.menu-divider:last-child {
+	display:none !important;
+}
+#home-content {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+.locker,#page-content {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 86%;
+	display: block;
+}
+#main-buttons {
+	clear: both;
+    display: block;
+    float: none;
+    margin-left: 0;
+    width: 94%;
+}
+#home-ranking {
+	clear: none;
+    display: block;
+    float: none;
+    margin: 1.5px 3.3% 4px;
+    width: 93.5%;
+}
+.home-ranking-box {
+    height: 392.5px;
+    margin: 1px;
+    width: 99.5%;
+}
+#social-section {
+	clear: both;
+    display: block;
+    float: none;
+    margin: 0 3.5%;
+    width: 93.2%;
+}
+#home-social-1 {
+	clear: both;
+    display: block;
+    float: none;
+    margin-left: 0;
+    width: 100%;
+}
+#home-social-2 {
+	clear: none;
+    display: block;
+    float: none;
+    margin-left: 0;
+    width: 100%;
+}
+#home-social-3 {
+	clear: none;
+    display: block;
+    float: none;
+    margin-left: 0;
+    width: 100%;
+}
+#footer {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+#footer-nav {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+#footer-nav ul li a {
+    padding: 0 29.5px;
+}
+#footer-copyright {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+}
+
+/* Desktop Layout: 769px to a max of 1232px.  Inherits styles from: Mobile Layout and Tablet Layout. */
+
+@media only screen and (min-width: 769px) {
+.gridContainer {
+	width: 100%;
+	max-width: 100%;
+	padding-left: 0;
+	padding-right: 0;
+	margin: auto;
+}
+#outside-wrapper {
+	background: #fff none repeat scroll 0 0;
+    clear: both;
+    display: table;
+    margin: 0 auto;
+    width: 769px;
+}
+#header {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+#header-top {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+#header-left {
+	clear: both;
+    display: block;
+    float: left;
+    margin-left: 0;
+    padding: 0 0 0 10px;
+    width: 72.592%;
+}
+#header-right {
+	clear: none;
+    display: block;
+    float: left;
+    margin-left: 2.0408%;
+    padding: 0 10px 0 0;
+    width: 22.75%;
+}
+#nav {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+.menu-divider {
+	color:#fff;
+	display: inline !important;
+}
+.menu-divider:last-child {
+	display:none !important;
+}
+#home-content {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+.locker,#page-content {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 90%;
+	display: block;
+}
+#main-buttons {
+	clear: both;
+    display: block;
+    float: left;
+    margin-left: 0;
+    width: 588px;
+}
+#home-ranking {
+	clear: none;
+    display: block;
+    float: left;
+    margin: 0;
+    width: 152px;
+}
+.home-ranking-box {
+    height: 299px;
+    margin: 1px;
+    width: 151px;
+}
+#social-section {
+	clear: both;
+    display: block;
+    float: left;
+    margin: 0 14px;
+    width: 741px;
+}
+#home-social-1 {
+	clear: both;
+    display: block;
+    float: left;
+    margin: 1px;
+    width: 245px;
+}
+#home-social-2 {
+	clear: none;
+    display: block;
+    float: left;
+    margin: 1px;
+    width: 245px;
+}
+#home-social-3 {
+	clear: none;
+    display: block;
+    float: left;
+    margin: 1px;
+    width: 245px;
+}
+#footer {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+#footer-nav {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+#footer-nav ul li a {
+    padding: 0 29.5px;
+}
+#footer-copyright {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+}
+
+/* Desktop Layout: 970px to a max of 100%.  Inherits styles from: Mobile Layout and Tablet Layout. */
+
+@media only screen and (min-width: 970px) {
+.gridContainer {
+	width: 100%;
+	max-width: 100%;
+	padding-left: 0;
+	padding-right: 0;
+	margin: auto;
+}
+#outside-wrapper {
+	background: #fff none repeat scroll 0 0;
+    clear: both;
+    display: table;
+    margin: 0 auto;
+    width: 970px;
+}
+#header {
+	clear: both;
+    display: inline-block;
+    float: left;
+    margin: 0 auto 32px;
+    width: 100%;
+}
+#header-top {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+#header-left {
+	clear: both;
+    display: block;
+    float: left;
+    margin-left: 0;
+    padding: 0 0 0 10px;
+    width: 748px;
+}
+#header-right {
+    clear: none;
+    display: block;
+    float: left;
+    margin-left: 19px;
+    padding: 0 10px 0 0;
+    width: 183px;
+}
+#nav {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+.menu-divider {
+	color:#fff;
+	display: inline !important;
+}
+.menu-divider:last-child {
+	display:none !important;
+}
+#home-content {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+.locker,#page-content {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 92%;
+	display: block;
+}
+#main-buttons {
+    clear: both;
+    display: block;
+    float: left;
+    margin-left: 0;
+    width: 789px;
+}
+#home-ranking {
+    clear: none;
+    display: block;
+    float: left;
+    margin: 0;
+    width: 179px;
+}
+.home-ranking-box {
+    height: 436px;
+    margin: 0 13px;
+    width: 153px;
+}
+#social-section {
+    border-top: 1px solid #999;
+    clear: both;
+    display: block;
+    float: left;
+    margin: 0 15px;
+    padding: 30px 0;
+    width: 940px;
+}
+#home-social-1 {
+	clear: none;
+    display: block;
+    float: left;
+    height: 200px;
+    margin: 1px;
+    width: 311.3px;
+}
+#home-social-2 {
+	clear: none;
+    display: block;
+    float: left;
+    height: 200px;
+    margin: 1px;
+    width: 311.3px;
+}
+#home-social-3 {
+	clear: none;
+    display: block;
+    float: left;
+    height: 200px;
+    margin: 1px;
+    width: 311.3px;
+}
+#footer {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+#footer-nav {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+#footer-nav ul li a {
+    padding: 0 30px;
+}
+#footer-copyright {
+	clear: both;
+	float: left;
+	margin-left: 0;
+	width: 100%;
+	display: block;
+}
+}
