@@ -14,17 +14,15 @@ global $post_id,$currentAmount;
 		do_shortcode('[umbrella_person_profile_page]');
 		$uPPUmbrellaPersonalProfile = new App\UPPUmbrellaPersonalProfile();
 		if($uPPUmbrellaPersonalProfile->getFaceBookIsAuthenticated()):
+
 			print "<br> user id " . $uPPUmbrellaPersonalProfile->getCurrentUserId();
 			print "<br> name " . $uPPUmbrellaPersonalProfile->getFaceBookName();
 			print "<br> email " . $uPPUmbrellaPersonalProfile->getFaceBookEmail();
 			print "<br> profile path " . $uPPUmbrellaPersonalProfile->getFaceBookProfilePicPath();
 			print "<br> authenticated " . $uPPUmbrellaPersonalProfile->getFaceBookIsAuthenticated();
-			print "<br>partner id from ontraport " . $uPPUmbrellaPersonalProfile->getPartnerIdFromOntraport();
 			$uPPUmbrellaPersonalProfile->htmlPrintFacebookInfoIncludingPicture();
 			$uPPUmbrellaPersonalProfile->htmlDesignForFaceBookRemovePopup();
-			print "<br> ontraport facebook email tag : f1583  " . $uPPUmbrellaPersonalProfile->getOntraportFaceBookEmailTag();
 		endif;
-
 
 	?> 
 	<h2><?php the_title();?></h2>
@@ -44,26 +42,7 @@ global $post_id,$currentAmount;
 	?>
 	<div class="business-profile">
 			<?php 
-				if(  is_user_logged_in() ){
-				$host  		= "db640728737.db.1and1.com";
-				$database   = "db640728737";
-				$user  		= "dbo640728737";
-				$password   = "1qazxsw2!QAZXSW@";
-				try{
-				$WP_CON	= new PDO('mysql:host='.$host.';dbname='.$database.';', $user, $password);
-				$WP_CON->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-				}catch(PDOException $ERR){
-					echo $ERR->getMessage();
-					exit();
-				}
-				try{
-					$QUESTRING_GETNAIMG = "SELECT * FROM wp_user_imguploads";
-					$GETNAIMG_RESULT	= $WP_CON->query($QUESTRING_GETNAIMG);
-					$GETNAIMG_LISTS		= $GETNAIMG_RESULT->fetch();
-				}catch(PDOException $ERR){
-					echo $ERR->getMessage();
-					exit();
-				}	
+			if(  is_user_logged_in() ){
 				$current_user = wp_get_current_user();
 				$customAPIKEY  = get_field('custom_api_key','option');// name of the admin
 				$customAPIID  = get_field('custom_api_id','option');// Email Title for the admin
@@ -104,28 +83,11 @@ global $post_id,$currentAmount;
 					while ( $the_query->have_posts() ) { $the_query->the_post();
 						$post_id=get_the_ID();
 						?>
-						<form method="post" action="" id="personalForm">	
-							<div class="profile-info profile-left">
-								<input type="hidden" value="<?php the_ID();?>" name="personalID" id="personalID">
-								<input type="hidden" value="<?php echo $profileID; ?>" name="profileID" id="profileID">
+						<form method="post" action="">	
+							<div class="profile-info">
+								<input type="hidden" value="<?php the_ID();?>" name="personalID" id="pesonal-id">
+								<input type="hidden" value="<?php echo $profileID; ?>" name="profileID" id="profile-id">
 								<h2>Personal Details</h2>
-								<script>
-										function readURL(input) {
-											if (input.files && input.files[0]) {
-												var reader = new FileReader();
-
-												reader.onload = function (e) {
-													$('#imageUploadPreview').attr('src', e.target.result);
-												}
-
-												reader.readAsDataURL(input.files[0]);
-											}
-										}
-
-										$("#inputFile").change(function () {
-											readURL(this);
-										});
-								</script>
 								<div class="full-name">
 									<?php
 									if( get_field('hide_display_name','option') ){
@@ -134,7 +96,7 @@ global $post_id,$currentAmount;
 										<?php
 										if( get_field('hide_edit_name','option') ){
 										?>
-											<input type="text" name="name" value="<?php the_title();?>" id="name">
+											<input type="text" name="fname" value="<?php the_title();?>" id="name">
 										<?php
 										}else{
 										?>
@@ -153,7 +115,7 @@ global $post_id,$currentAmount;
 										<?php
 										if( get_field('edit_first_personal_address','option') ){
 										?>
-											<input type="text" name="firstAddress" value="<?php echo get_field('address_line_1');?>" id="firstAddress">
+											<input type="text" name="f_address" value="<?php echo get_field('address_line_1');?>" id="first-address">
 										<?php
 										}else{
 										?>
@@ -171,7 +133,7 @@ global $post_id,$currentAmount;
 										<?php
 										if( get_field('edit_second_personal_address_copy','option') ){
 										?>
-											<input type="text" name="secondAddress" value="<?php echo get_field('address_line_2');?>" id="secondAddress">
+											<input type="text" name="s_address" value="<?php echo get_field('address_line_2');?>" id="second-address">
 										<?php
 										}else{
 										?>
@@ -182,7 +144,7 @@ global $post_id,$currentAmount;
 									?>
 								</div>
 								<div class="clear-both">
-									<ul> 
+									<ul>
 										<li>
 											<div class="town">
 												<?php
@@ -236,7 +198,7 @@ global $post_id,$currentAmount;
 													<?php
 													//if( get_field('edit_display_name_company_town','option') ){
 													?>
-														<input type="text" name="county" value="<?php echo get_field('country');?>" id="county" maxlength="50">
+														<input type="text" name="county" value="<?php echo get_field('country');?>" id="County" maxlength="50">
 													<?php
 													//}else{
 													?>
@@ -277,7 +239,7 @@ global $post_id,$currentAmount;
 										<?php
 										if( get_field('edit_display_name_email_address','option') ){
 										?>
-											<input type="text" name="emailAddress" value="<?php echo get_field('email_address');?>" id="emailAddress" disabled>
+											<input type="text" name="emailaddress" value="<?php echo get_field('email_address');?>" id="emailaddress" disabled>
 										<?php
 										}else{
 											?>
@@ -298,7 +260,7 @@ global $post_id,$currentAmount;
 													<?php
 													if( get_field('edit_display_name_home_phone','option') ){
 													?>
-														<input type="text" name="homePhone" value="<?php echo get_field('home_phone');?>" id="homePhone">
+														<input type="text" name="home_phone" value="<?php echo get_field('home_phone');?>" id="home-phone">
 													<?php
 													}else{
 													?>
@@ -318,7 +280,7 @@ global $post_id,$currentAmount;
 														<?php
 														if( get_field('edit_display_name_mobile_phone','option') ){
 														?>
-															<input type="text" name="mobilePhone" value="<?php echo get_field('mobile_phone');?>" id="mobilePhone">
+															<input type="text" name="mobile_phone" value="<?php echo get_field('mobile_phone');?>" id="mobile-phone">
 														<?php
 														}else{
 														?>
@@ -344,102 +306,20 @@ global $post_id,$currentAmount;
 								){
 									?>
 									<div class="submit-button">
-										<input type="hidden" name="action"  value="personalProfile">
 										<input type="submit" class="profile-button" value="Update Personal Profile >" id="personal-profiles">
-										<div id="personal-loading" style="display:none;">
-											<img src="<?php echo get_stylesheet_directory_uri().'/images/loading.gif';?>">
-										</div>
 									</div>
 									<?php
 								}else{
 									
 								}
 								?>
-								<div class="personal-log">
-								</div>
-							</div>
-							<div class="profile-right">
-								<div class="profile-image-wrapper">
-									<div class="logo-wrapper">
-										 <div class="file-upload btn btn-primary personal-profile-button">	
-											 <span>Change Profile Picture ></span>
-											 <input type="file" name="thumbnailProfile" id="inputFile" accept="image/*">
-										 </div>										 
-										 <input type="hidden" name="post_id" id="post_id" value="<?php echo get_the_ID();?>" />
-										<?php wp_nonce_field( 'thumbnailProfile', 'thumbnailProfile_nonce' ); ?>
-										<?php
-										global $featured_image,$status;
-											$sql = $WP_CON->prepare('SELECT profileURL AS url,ui_STATUS AS status FROM wp_user_imguploads WHERE uid_PartnerID = :parnerID');
-											$sql->execute(array(':parnerID' => $profileID));
-											$result = $sql->fetchObject();
-											$status=$result->status;
-											if(!empty($result->url)) {
-												$featured_image=$result->url;
-											}
-											switch($status){
-											  case 0  : 
-												$class_watermark='class="water-wrapper water-mark"';
-												$featured	= $featured_image;
-												
-											  break;
-											  case 1  : 
-												$class_watermark='class="water-wrapper"';
-												$featured	= $featured_image;
-											  break;
-											  default : 
-												$class_watermark='class="water-wrapper"';
-												//$featured   = get_stylesheet_directory_uri().'/images/default-logo.jpg';
-											  break;
-											}
-										?>
-										<div <?php echo $class_watermark; ?> >
-											<img id="imageUploadPreview" src="<?php if(!empty($featured)){echo $featured;}else{ echo get_stylesheet_directory_uri().'/images/avatar.png';}?>" alt="" />
-										</div>
-										<script>
-											function readURL(input) {
-												if (input.files && input.files[0]) {
-													var reader = new FileReader();
-
-													reader.onload = function (e) {
-														$('#imageUploadPreview').attr('src', e.target.result);
-													}
-
-													reader.readAsDataURL(input.files[0]);
-												}
-											}
-
-											$("#inputFile").change(function () {
-												readURL(this);
-											});
-									</script>
-									</div> 
-								</div>
 							</div>
 						</form>
+						<div class="personal-log">
+						</div>
 						<script>
 						jQuery(document).ready(function($){
-							$("#personalForm").on('submit',(function(e) {
-								e.preventDefault();
-								var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
-								//var formData = new FormData(this);		
-								//alert(formData);
-								$('#personal-loading').show();
-								$.ajax({
-									url: ajaxurl, // Url to which the request is send
-									type: "POST",             // Type of request to be send, called as method
-									data: new FormData(this), // Data sent to server, a set of key/value pairs (i.e. form fields and values)
-									contentType: false,       // The content type used when sending data to the server.
-									cache: false,             // To unable request pages to be cached
-									processData:false,        // To send DOMDocument or non processed data file it is set to false
-									success: function(data)   // A function to be called if request succeeds
-									{
-										$('#personal-loading').hide();
-										$(".personal-log").html(data);
-										window.top.location.reload();
-									}
-								});
-							}));
-							/*$("#personal-profiles").click(function(){
+							$("#personal-profiles").click(function(){
 								var pesonalID = $("#pesonal-id").val();
 								var profileID = $("#profile-id").val();
 								var name = $("#name").val();
@@ -485,7 +365,7 @@ global $post_id,$currentAmount;
 									});
 								}
 								return false;
-							});*/
+							});
 						 });	
 						</script>
 						<?php

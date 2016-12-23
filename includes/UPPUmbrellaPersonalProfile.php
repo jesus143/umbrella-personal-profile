@@ -15,12 +15,14 @@ class UPPUmbrellaPersonalProfile
 		$this->setCurrentUserLogged();
 		$this->checkRequestFbDelete();
 	}
-
 	protected function checkRequestFbDelete()
 	{
 		if(isset($_POST['fbDelete'])) {
 			$this->deleteSessionFaceBookInformationAll();
 			$this->deleteFaceBookInformationFromWpOptionAll();
+			$this->deleteTagInfoFromOntraPort();
+		} else {
+			$this->updateTagInfoToOntraPort();
 		}
 	}
 	public function setCurrentUserLogged() {
@@ -37,12 +39,7 @@ class UPPUmbrellaPersonalProfile
 	    // echo 'User display name: ' . $current_user->display_name . '<br />';
 	    // echo 'User ID: ' . $current_user->ID . '<br />';  
 	    $this->user_id = $current_user->ID; 
-	} 
-	// user function group
-	/**
-	 * Get current user id
-	 * @return int user_id
-	 */
+	}
 	public function getCurrentUserId() 
 	{
 		return  $this->user_id;
@@ -110,7 +107,6 @@ class UPPUmbrellaPersonalProfile
 	{
 		return $this->getOption($this->getCurrentUserId() . '_fb_authenticated');
 	}
-
 	public function deleteFaceBookInformationFromWpOption($faceBookData = [])
 	{
 		foreach($faceBookData as $key => $value) {
@@ -133,19 +129,14 @@ class UPPUmbrellaPersonalProfile
 		}
 		return true;
 	}
-
-	protected function getOption($key) {
+	protected function getOption($key)
+	{
 		return get_option($key);
 	}
-	protected function deleteOption($key) {
+	protected function deleteOption($key)
+	{
 		return delete_option($key);
 	}
-	/**
-	 *
-	 * ex: array('key'=>'value')
-	 * @param $faceBookData
-	 *
-	 */
 	public function saveFaceBookInformationToWpOption($faceBookData = [])
 	{
 		foreach($faceBookData as $key => $value) {
@@ -161,15 +152,127 @@ class UPPUmbrellaPersonalProfile
 			return false;
 		}
 
-	} 
+	}
 	// Ontraport
-	public function updateTagInfoToOntraPort($tagInfo)
+	public function OpUpdateDeleteInit($faceBookEmail, $method)
 	{
+		$user 	= wp_get_current_user();
+		$API_URL	= 'https://api.ontraport.com/1/objects?';
+//		print "<brr> current user email " . $user->user_email;
+
+		$API_DATA	= array(
+				'objectID'		=> 0,
+				'performAll'	=> 'true',
+				'sortDir'		=> 'asc',
+				'condition'		=> "email='".$user->user_email."'", //use this format since its a sql query condition. For other fields, you may change this value to something else.
+				'searchNotes'	=> 'true'
+		);
+
+		$API_KEY 	= 'fY4Zva90HP8XFx3';
+		$API_ID		= '2_7818_AFzuWztKz';
+
+		//$API_RESULT	= query_api_call($postargs, $API_ID, $API_KEY);
+
+		$API_RESULT = $this->op_query($API_URL, 'GET', $API_DATA, $API_ID, $API_KEY);
+
+		$getName 	= json_decode($API_RESULT);
+
+		//		var_dump($getName->data[0]); //sample for getting all data from the decoded json
+
+		$PARTNER_ID 	= $getName->data[0]->id;
+		//		echo $PARTNER_ID; //partner ID
+
+		$FACEBOOK_EMAILSAMPLE = $faceBookEmail;
+
+		$API_UDATA 	= array(
+				'objectID'   		=> 0,
+				'id'  	 		=> $PARTNER_ID,
+				'f1583'  		=> $FACEBOOK_EMAILSAMPLE
+		);
+
+		//GET PUT RESULT
+		return $this->op_query( $API_URL, $method, $API_UDATA, $API_ID, $API_KEY );
+	}
+	private function op_query($url, $method, $data, $appID, $appKey){
+		$ch = curl_init( );
+		switch ($method){
+			case 'POST': {
+				curl_setopt($ch, CURLOPT_URL, $url);
+				curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json','Content-Length: ' . strlen(json_encode($data)), 'Api-Appid:' . $appID, 'Api-Key:' . $appKey));
+				curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+				curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				break;
+			}
+			case 'PUT': {
+				curl_setopt($ch, CURLOPT_URL, $url);
+				curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json','Content-Length: ' . strlen(json_encode($data)), 'Api-Appid:' . $appID, 'Api-Key:' . $appKey));
+				curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+				curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				break;
+			}
+			case 'GET': {
+				$finalURL = $url . urldecode(http_build_query($data));
+				curl_setopt ($ch, CURLOPT_RETURNTRANSFER, true);
+				curl_setopt ($ch, CURLOPT_URL, $finalURL);
+				curl_setopt ($ch, CURLOPT_HTTPHEADER, array('Api-Appid:' . $appID, 'Api-Key:' . $appKey));
+				break;
+			}
+		}
+		$response  = curl_exec($ch);
+		curl_close($ch);
+
+		return $response;
+	}
+	private function op_other_query()
+	{
+		$current_user = wp_get_current_user();
+		$customAPIKEY  = get_field('custom_api_key','option');// name of the admin
+		$customAPIID  = get_field('custom_api_id','option');// Email Title for the admin
+		//echo "Email Address: " . $current_user->user_email;
+		//$postargs = "http://api.ontraport.com/1/objects?objectID=0&performAll=true&sortDir=asc&condition=email%3D'testing@umbrellasupport.co.uk'&searchNotes=true";
+		$postargs = "http://api.ontraport.com/1/objects?objectID=0&performAll=true&sortDir=asc&condition=email%3D'".$current_user->user_email."'&searchNotes=true";
+		$session = curl_init();
+		curl_setopt ($session, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt ($session, CURLOPT_URL, $postargs);
+		//curl_setopt ($session, CURLOPT_HEADER, true);
+		curl_setopt ($session, CURLOPT_HTTPHEADER, array(
+				'Api-Appid:'.$customAPIID,
+				'Api-Key:'.$customAPIKEY
+		));
+		$response = curl_exec($session);
+		curl_close($session);
+		//header("Content-Type: text");
+		//echo "CODE: " . $response;
+		$getName  = json_decode($response);
+		$profileID = $getName->data[0]->id;
+		$currentAmount = $getName->data[0]->f1547;
+	}
+	public function getOntraportFaceBookEmailTag()
+	{
+		$opResponse =$this->OpUpdateDeleteInit($this->getFaceBookEmail(), "GET");
+		$opResponse = json_decode($opResponse, true );
+		return $opResponse['data'][0]['f1583'];
+	}
+	public function getTagInfoOntraPort()
+	{
+		$opResponse =$this->OpUpdateDeleteInit($this->getFaceBookEmail(), "GET");
+		$opResponse = json_decode($opResponse, true );
+		return $opResponse;
+	}
+	public function updateTagInfoToOntraPort()
+	{
+		return $this->OpUpdateDeleteInit($this->getFaceBookEmail(), "PUT");
 		// coding that will update the tag from OP here
 	}
-	public function deleteTagInfoFromOntraPort($tagInfo)
+	public function deleteTagInfoFromOntraPort()
 	{
+		return $this->OpUpdateDeleteInit("", "PUT");
 		// coding that will remove the tag info saved from ontraport
+	}
+	public function getPartnerIdFromOntraport() {
+		return $this->getTagInfoOntraPort()['data'][0]['id'];
 	}
 	// html
 	public function htmlPrintFacebookInfoIncludingPicture()
@@ -178,11 +281,11 @@ class UPPUmbrellaPersonalProfile
 		?>
 
 			<div class="row user-fb-wrapper" style="">
-				<div class="col-md-3 col-sm-3 col-xs-3" >
+				<div class="col-md-2" >
 					<img class="fb-profile" src="<?php print $this->getFaceBookProfilePicPath(); ?>">
 					<!-- <div class="facebook-icon"><img src="http://livewebchatcode.com/facebook/facebook-icon.png"></div>-->
 				</div>
-				<div class="col-md-9 col-sm-9 col-xs-9">
+				<div class="col-md-8">
 					<?php
 					echo '<p class="fb-details"><b>'. $this->getFaceBookName()  . '</b><br/>';
 					echo  $this->getFaceBookEmail()   . '</p>';
@@ -412,4 +515,60 @@ class UPPUmbrellaPersonalProfile
 
 		return true;
 	}
+	// businness profile pic
+	protected function uPP_getBusinessProfilePicPath()
+	{
+		$host    = "db640728737.db.1and1.com";
+		$database   = "db640728737";
+		$user    = "dbo640728737";
+		$password   = "1qazxsw2!QAZXSW@";
+
+		$businessID = 77514;
+		try{
+			$WP_CON = new PDO('mysql:host='.$host.';dbname='.$database.';', $user, $password);
+			$WP_CON->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		}catch(PDOException $ERR){
+			echo $ERR->getMessage();
+			exit();
+		}
+		try{
+			$QUESTRING_GETNAIMG = "SELECT * FROM wp_user_imguploads";
+			$GETNAIMG_RESULT = $WP_CON->query($QUESTRING_GETNAIMG);
+			$GETNAIMG_LISTS  = $GETNAIMG_RESULT->fetch();
+		}catch(PDOException $ERR){
+			echo $ERR->getMessage();
+			exit();
+		}
+
+		global $featured_image,$status;
+		$sql = $WP_CON->prepare('SELECT ui_URL AS url,ui_STATUS AS status FROM wp_user_imguploads WHERE uid_PartnerID = :parnerID');
+		$sql->execute(array(':parnerID' => $businessID));
+		$result = $sql->fetchObject();
+		$status=$result->status;
+		if(!empty($result->url)) {
+			$featured_image=$result->url;
+		}
+		switch($status){
+			case 0  :
+				$class_watermark='class="water-wrapper water-mark"';
+				$featured = $featured_image;
+
+				break;
+			case 1  :
+				$class_watermark='class="water-wrapper"';
+				$featured = $featured_image;
+				break;
+			default :
+				$class_watermark='class="water-wrapper"';
+				//$featured   = get_stylesheet_directory_uri().'/images/default-logo.jpg';
+				break;
+		}
+		print "<br>featured image "  .  $featured;
+		print "<br>class watermark " .  $class_watermark;
+	}
+
 }
+
+
+// Helper
+
