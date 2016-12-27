@@ -21,6 +21,8 @@ class UPPUmbrellaPersonalProfile
 			$this->deleteSessionFaceBookInformationAll();
 			$this->deleteFaceBookInformationFromWpOptionAll();
 			$this->deleteTagInfoFromOntraPort();
+
+			header('Location: http://testing.umbrellasupport.co.uk/personal-profile');
 		} else {
 			$this->updateTagInfoToOntraPort();
 		}
@@ -87,6 +89,11 @@ class UPPUmbrellaPersonalProfile
 		return true;
 	}
 	// wp_option database
+
+	public function getWpOptionFaceBookImageIndex()
+	{
+		return $this->getOption($this->getCurrentUserId() . '_fb_image_index');
+	}
 	public function getWpOptionFaceBookUserId()
 	{
 		return $this->getOption($this->getCurrentUserId() . '_fb_id');
@@ -122,6 +129,7 @@ class UPPUmbrellaPersonalProfile
 			$this->getCurrentUserId() . '_fb_fn',
 			$this->getCurrentUserId() . '_fb_profile_pic',
 			$this->getCurrentUserId() . '_fb_authenticated',
+			$this->getCurrentUserId() . '_fb_image_index',
 		];
 
 		foreach($faceBookData as $key) {
@@ -154,6 +162,7 @@ class UPPUmbrellaPersonalProfile
 
 	}
 	// Ontraport
+
 	public function OpUpdateDeleteInit($faceBookEmail, $method)
 	{
 		$user 	= wp_get_current_user();
@@ -278,11 +287,12 @@ class UPPUmbrellaPersonalProfile
 	public function htmlPrintFacebookInfoIncludingPicture()
 	{
 		$this->styleCss();
+		$this->htmlDesignForFaceBookRemovePopup();
 		?>
 
 			<div class="row user-fb-wrapper" style="">
 				<div class="col-md-2" >
-					<img class="fb-profile" src="<?php print $this->getFaceBookProfilePicPath(); ?>">
+					<img class="fb-profile" src="<?php print $this->getFaceBookProfilePicPath(); ?>" />
 					<!-- <div class="facebook-icon"><img src="http://livewebchatcode.com/facebook/facebook-icon.png"></div>-->
 				</div>
 				<div class="col-md-8">
@@ -487,7 +497,39 @@ class UPPUmbrellaPersonalProfile
 		</style>
 	<?php
 	}
+	public function htmlPrintFbButton()
+	{
+		?>
+		<div class="row">
+
+			<script type="text/javascript">
+				var myWindow;
+				var cInterval;
+				function fbauth(){
+					myWindow  = window.open('http://testing.umbrellasupport.co.uk/wp-content/plugins/umbrella-personal-profile/public/resources/FB%20Login/facebook-auth.php', '_blank', 'height=620, width=620');
+					cInterval = setInterval(function(){
+						if(myWindow.closed){
+							window.location.reload();
+							clearInterval(cInterval);
+						}
+					}, 1000);
+				}
+			</script>
+
+			<div class="col-md-12">
+				<div class="form-group">
+					<label class="control-label">Authenticate Account with Facebook</label><br>
+					<a href="#" id="fblogin" onclick="fbauth()"> <img height="19px" src="http://livewebchatcode.com/facebook/fb-login-button-v1.png"></a>
+				</div>
+			</div>
+		</div>
+	<?php
+	}
 	// session and wp_option
+	public function getFaceBookImageIndex()
+	{
+		return (!empty($this->getWpOptionFaceBookImageIndex())) ? $this->getWpOptionFaceBookImageIndex() : 0;
+	}
 	public function getFaceBookUserId()
 	{
 		return (!empty($this->getWpOptionFaceBookUserId())) ? $this->getWpOptionFaceBookUserId() : $this->getSessionFaceBookUserId();

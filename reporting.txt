@@ -35,3 +35,59 @@ arrange and setup html and styling for the display of facebook profile pic, full
 -------------------------------------------
 
 continue with personal data tomorrow..
+
+
+
+
+
+
+Update for 23, 2016
+
+able to update OP "facebook email" tag
+able to remove OP "facebook email" tag
+filter the business profile image,
+fix design for the authenticated facebook modal, email, fullname and delete icon
+add helper file that where we can store the global variables and this can be used in umbrella messaging portal soon
+getting profile business image, placed to helper for global use purposes
+change functions names that will matched to our function call, this will help more readable with other developer
+separate return functions
+add functionality to trigger update or remove op facebook tag
+
+---note----
+Need to let Marvin put all the design in personal profile then i can add mine too, sense the functionality are ready.
+
+Todo by 27, 2016
+
+Check each reply who replied whos agent replied to it
+If found that this is the agent then grab the profile pic and name to display in the chats or replies
+Set agent with profile picture to show
+
+Agent login to wordpress and can visit to an plugin in admin “message portal agent profile”
+-	Full Name
+-	Profile Pic Link
+-	Allow to update
+
+When they update it the that will be used in chatting and replies in the tickets
+
+
+Hi Rich,
+
+Personal profile is ok now in my end and Marvin will check it and do his update
+then he can ask you to check after, as he told me.
+
+Update for 27, 2016
+1. Create ui for message portal settings fullname and profile url with agents
+2. When delete facebook need to reload twice so that when user want to authenticate facebook again, authentication will not fail.
+3. Add image index to wp_option table for facebook authentication status, this will help to decide what to display facebook or manual upload
+5. Update image index to wp_option when manual image profile pic upload executed by the user
+6. Add popup to facebook include picture function
+7. Remove index.php in the plugin, because this will cause an error and conflict plus redundant in coding.
+8. Remove all the debugging and fix the design of the personal-profile page, I only fixed my part as facebook authentication
+9. Add facebook image, email, name and delete below of the profile pic
+10. If facebook authenticated then facebook profile pic should show in the main picture and below it.
+11. If new custom image uploaded then facebook profile pic displayed in the main image will re replaced with custom image but below facebook info will be replaced
+12. Remove css in main plugin personal-profile to avoid conflict
+
+Todo for 28, 2016
+Fix any update above and issue if any
+Continue working FD admin profile picture with reply

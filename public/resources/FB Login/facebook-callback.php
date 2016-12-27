@@ -86,6 +86,7 @@
 				'fb_fn' => $user['name'],
 				'fb_profile_pic' => "http://graph.facebook.com/" . $user['id'] . "/picture",
 				'fb_authenticated' => true,
+				'fb_image_index' => 1,
 		];
 
 		$uPPUmbrellaPersonalProfile->setSessionFacebookProfileVariables($faceBookInformation);

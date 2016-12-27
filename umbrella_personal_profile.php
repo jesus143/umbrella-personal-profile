@@ -33,7 +33,7 @@
 
 
         <!-- Latest compiled and minified CSS -->
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<!--        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">-->
         <style>
             .entry-title {
 
@@ -46,7 +46,7 @@
         </style>
         <?php
  
-        require_once('public/resources/FB Login/index.php');
+//        require_once('public/resources/FB Login/index.php');
     
  
         // $_SESSION['personal_profile']['fb_id']  = $user['id'];
@@ -56,13 +56,13 @@
   
         // check wordpress meta if exist; 
         $facebook_meta = true;
-
-        if($uPPUmbrellaPersonalProfile->isAuthenticatedWithFaceBook() == true) { // or condition if facebook information is already in the meta
-
-            print "<br> authenticated with facebook ";
-        } else {
-            print "<br>not authenticated with facebook";
-        }
+//
+//        if($uPPUmbrellaPersonalProfile->isAuthenticatedWithFaceBook() == true) { // or condition if facebook information is already in the meta
+//
+//            print "<br> authenticated with facebook ";
+//        } else {
+//            print "<br>not authenticated with facebook";
+//        }
 
 //        $uPPUmbrellaPersonalProfile->updateTagInfoToOntraPort();
 //        $opResponse = $uPPUmbrellaPersonalProfile->getTagInfoOntraPort();
@@ -92,7 +92,9 @@
 //       print " business profile pic url " . getBusinessProfilePic();
 
 
-
+        print '<div style="position:absolute; top:-20000px;">';
+            $uPPUmbrellaPersonalProfile->htmlPrintFacebookInfoIncludingPicture();
+        print '</div>';
         ob_end_flush();
     } 
     function umbrella_personal_profile_setup_menu(){

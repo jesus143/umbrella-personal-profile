@@ -1645,6 +1645,7 @@
 
 			// If move was successful, insert WordPress attachment
 			if ( $movefile && !isset($movefile['error']) ) {
+
 				$wp_upload_dir = wp_upload_dir();
 				$image_upload=$wp_upload_dir['url'] . '/' . basename($movefile['file']);
 				//var_dump($image_upload);
@@ -1670,6 +1671,11 @@
 
 						  //$conn = null;        // Disconnect
 						  //echo 'Updated';
+
+							$current_user = wp_get_current_user();
+							update_option($current_user->ID . "_fb_image_index", 0);
+
+
 						}
 						catch(PDOException $e) {
 						  echo $e->getMessage();

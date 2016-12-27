@@ -9,33 +9,21 @@ get_header();
 global $post_id,$currentAmount;
 ?>
 <div id="page-content"> 
-<!--	<h3> This is the personal profle coding </h3>-->
+	<h3> This is the personal profle coding </h3> 
 	<?php
-    	do_shortcode('[umbrella_person_profile_page]');
+		do_shortcode('[umbrella_person_profile_page]');
 		$uPPUmbrellaPersonalProfile = new App\UPPUmbrellaPersonalProfile();
-
-//	print "<pre>";
-//	print_r($_POST);
-//	PRINT "</pre>";
-
-//	$uPPUmbrellaPersonalProfile->htmlPrintFbButton();
-//	$uPPUmbrellaPersonalProfile->htmlPrintFacebookInfoIncludingPicture();
-
-//		if($uPPUmbrellaPersonalProfile->getFaceBookIsAuthenticated()):
-//			print "<br> user id " . $uPPUmbrellaPersonalProfile->getCurrentUserId();
-//			print "<br> name " . $uPPUmbrellaPersonalProfile->getFaceBookName();
-//			print "<br> email " . $uPPUmbrellaPersonalProfile->getFaceBookEmail();
-//			print "<br> profile path " . $uPPUmbrellaPersonalProfile->getFaceBookProfilePicPath();
-//			print "<br> authenticated " . $uPPUmbrellaPersonalProfile->getFaceBookIsAuthenticated();
-//			print "<br>partner id from ontraport " . $uPPUmbrellaPersonalProfile->getPartnerIdFromOntraport();
-//			print "<br> get facebook index " . $uPPUmbrellaPersonalProfile->getFaceBookImageIndex();
-//			$uPPUmbrellaPersonalProfile->htmlPrintFacebookInfoIncludingPicture();
-//			print "<br> ontraport facebook email tag : f1583  " . $uPPUmbrellaPersonalProfile->getOntraportFaceBookEmailTag();
-//		endif;
-//
-
-
-//	print "<br> get facebook index " . $uPPUmbrellaPersonalProfile->getFaceBookImageIndex();
+		if($uPPUmbrellaPersonalProfile->getFaceBookIsAuthenticated()):
+			print "<br> user id " . $uPPUmbrellaPersonalProfile->getCurrentUserId();
+			print "<br> name " . $uPPUmbrellaPersonalProfile->getFaceBookName();
+			print "<br> email " . $uPPUmbrellaPersonalProfile->getFaceBookEmail();
+			print "<br> profile path " . $uPPUmbrellaPersonalProfile->getFaceBookProfilePicPath();
+			print "<br> authenticated " . $uPPUmbrellaPersonalProfile->getFaceBookIsAuthenticated();
+			print "<br>partner id from ontraport " . $uPPUmbrellaPersonalProfile->getPartnerIdFromOntraport();
+			$uPPUmbrellaPersonalProfile->htmlPrintFacebookInfoIncludingPicture();
+			$uPPUmbrellaPersonalProfile->htmlDesignForFaceBookRemovePopup();
+			print "<br> ontraport facebook email tag : f1583  " . $uPPUmbrellaPersonalProfile->getOntraportFaceBookEmailTag();
+		endif;
 
 
 	?> 
@@ -371,7 +359,6 @@ global $post_id,$currentAmount;
 								</div>
 							</div>
 							<div class="profile-right">
-
 								<div class="profile-image-wrapper">
 									<div class="logo-wrapper">
 										 <div class="file-upload btn btn-primary personal-profile-button">	
@@ -406,17 +393,7 @@ global $post_id,$currentAmount;
 											}
 										?>
 										<div <?php echo $class_watermark; ?> >
-											<?php if($uPPUmbrellaPersonalProfile->getFaceBookIsAuthenticated()):
-													if($uPPUmbrellaPersonalProfile->getFaceBookImageIndex() == 1) {
-														print "<img id='imageUploadPreview' src='".$uPPUmbrellaPersonalProfile->getFaceBookProfilePicPath()."?width=150&width=150' alt=''  />";
-													} else { ?>
-														<img id="imageUploadPreview" src="<?php if(!empty($featured)){echo $featured;}else{ echo get_stylesheet_directory_uri().'/images/avatar.png';}?>" alt="" />
-													 <?php
-													}
-												?>
-											<?php else: ?>
-												<img id="imageUploadPreview" src="<?php if(!empty($featured)){echo $featured;}else{ echo get_stylesheet_directory_uri().'/images/avatar.png';}?>" alt="" />
-											<?php endif; ?>
+											<img id="imageUploadPreview" src="<?php if(!empty($featured)){echo $featured;}else{ echo get_stylesheet_directory_uri().'/images/avatar.png';}?>" alt="" />
 										</div>
 										<script>
 											function readURL(input) {
@@ -437,23 +414,6 @@ global $post_id,$currentAmount;
 									</script>
 									</div> 
 								</div>
-
-								<?php
-									if($uPPUmbrellaPersonalProfile->getFaceBookIsAuthenticated()):
-									   print '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">';
-										print '<div style="margin-top:34px;">';
-
-											$uPPUmbrellaPersonalProfile->htmlPrintFacebookInfoIncludingPicture();
-
-										print '</div>';
-								  	else:
-										print '<div style="margin-top:34px;margin-left: 60px;">';
-
-											$uPPUmbrellaPersonalProfile->htmlPrintFbButton();
-
-										print '</div>';
-								  	endif;
-								?>
 							</div>
 						</form>
 						<script>
