@@ -143,6 +143,7 @@ class OAuth2Client
             'scope' => implode(',', $scope)
         ];
 
+
         return static::BASE_AUTHORIZATION_URL . '/' . $this->graphVersion . '/dialog/oauth?' . http_build_query($params, null, $separator);
     }
 

@@ -22,7 +22,7 @@ class UPPUmbrellaPersonalProfile
 			$this->deleteFaceBookInformationFromWpOptionAll();
 			$this->deleteTagInfoFromOntraPort();
 
-			header('Location: http://testing.umbrellasupport.co.uk/personal-profile');
+			header('Location: ' . get_site_url() . '/personal-profile');
 		} else {
 			$this->updateTagInfoToOntraPort();
 		}
@@ -167,7 +167,7 @@ class UPPUmbrellaPersonalProfile
 	{
 		$user 	= wp_get_current_user();
 		$API_URL	= 'https://api.ontraport.com/1/objects?';
-//		print "<brr> current user email " . $user->user_email;
+		//		print "<brr> current user email " . $user->user_email;
 
 		$API_DATA	= array(
 				'objectID'		=> 0,
@@ -234,6 +234,8 @@ class UPPUmbrellaPersonalProfile
 
 		return $response;
 	}
+
+	
 	private function op_other_query()
 	{
 		$current_user = wp_get_current_user();
@@ -498,28 +500,43 @@ class UPPUmbrellaPersonalProfile
 	<?php
 	}
 	public function htmlPrintFbButton()
-	{
+	{ 
 		?>
+			
+
+
+
+
 		<div class="row">
 
 			<script type="text/javascript">
 				var myWindow;
 				var cInterval;
 				function fbauth(){
-					myWindow  = window.open('http://testing.umbrellasupport.co.uk/wp-content/plugins/umbrella-personal-profile/public/resources/FB%20Login/facebook-auth.php', '_blank', 'height=620, width=620');
+					console.log("you are about to open new tab for fb login");
+					myWindow  = window.open('https://testing.umbrellasupport.co.uk/wp-content/plugins/umbrella-personal-profile/public/resources/FB%20Login/facebook-auth.php', '_blank', 'height=620, width=620');
 					cInterval = setInterval(function(){
 						if(myWindow.closed){
 							window.location.reload();
 							clearInterval(cInterval);
 						}
 					}, 1000);
+
 				}
 			</script>
 
 			<div class="col-md-12">
 				<div class="form-group">
-					<label class="control-label">Authenticate Account with Facebook</label><br>
+					
+
+
+				<!-- 	<label class="control-label">Authenticate Account with Facebook</label><br>
 					<a href="#" id="fblogin" onclick="fbauth()"> <img height="19px" src="http://livewebchatcode.com/facebook/fb-login-button-v1.png"></a>
+ -->
+					 <a class="btn btn-block btn-social btn-facebook"  onclick="fbauth()" style="cursor: pointer">
+			            <span class="fa fa-facebook"></span> Authenticate Account with Facebook >
+			        </a>
+ 
 				</div>
 			</div>
 		</div>

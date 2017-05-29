@@ -3,24 +3,27 @@
 		session_start();
 	}
 
-
-
+	require_once ('config.php');
 	require_once('../../../../../../wp-load.php');
 	require_once('../../../includes/UPPUmbrellaPersonalProfile.php');
-	require_once('../facebook/src/Facebook/autoload.php');
+	require_once('../facebook-php-graph-sdk-5.5/src/Facebook/autoload.php');
+
+
 	$uPPUmbrellaPersonalProfile = new App\UPPUmbrellaPersonalProfile();
 
-
-
 	$fb = new Facebook\Facebook([
-			'app_id' => '1809109289321551', // Replace {app-id} with your app id
-			'app_secret' => 'c708e1816369948058edebc76df52d9d',
-			'default_graph_version' => 'v2.7',
-		]);
+		'app_id' => $con['app_id'], // Replace {app-id} with your app id
+		'app_secret' => $con['app_secret'],
+		'default_graph_version' => 'v2.9',
+	]);
+
+		 
 	$helper = $fb->getRedirectLoginHelper();
 	if(isset($_GET['code'])){
 		try {
+
 		  $accessToken = $helper->getAccessToken();
+			echo "get access token";
 		} catch(Facebook\Exceptions\FacebookResponseException $e) {
 		  // When Graph returns an error
 		  echo 'Graph returned an error: ' . $e->getMessage();
@@ -49,7 +52,7 @@
 		$tokenMetadata = $oAuth2Client->debugToken($accessToken);
 		
 		// Validation (these will throw FacebookSDKException's when they fail)
-		$tokenMetadata->validateAppId('1809109289321551'); // Replace {app-id} with your app id
+		$tokenMetadata->validateAppId($con['app_id']); // Replace {app-id} with your app id
 		// If you know the user ID this access token belongs to, you can validate it here
 		
 		$tokenMetadata->validateExpiration();
@@ -66,12 +69,16 @@
 		}
 
 		$acctoken = (string) $accessToken;
-		
+
+
+
+
 		try {
 		  // Returns a `Facebook\FacebookResponse` object
 		  $response = $fb->get('/me?fields=id,name,email,first_name,last_name, gender, birthday,picture',$acctoken);
 		} catch(Facebook\Exceptions\FacebookResponseException $e) {
-		  echo 'Graph returned an error: ' . $e->getMessage();
+
+		    echo 'Graph returned an error: ' . $e->getMessage();
 		  exit;
 		} catch(Facebook\Exceptions\FacebookSDKException $e) {
 		  echo 'Facebook SDK returned an error: ' . $e->getMessage();

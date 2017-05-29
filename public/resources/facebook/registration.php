@@ -1,10 +1,9 @@
 <?php
 class UserLoginOrRegistration {
     function __construct() {
-        $this->app_id = '1809109289321551'; // FB App ID
-        $this->app_secret = 'c708e1816369948058edebc76df52d9d'; // FB App Secret
-        $this->current_url = ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']; // Current page url
-         
+        $this->app_id = '1723935810967312'; // FB App ID
+        $this->app_secret = '6c870d733850af7c2529546cd51417fe'; // FB App Secret
+        $this->current_url = ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']; // Current page url 
         $this->init_sessions();
     }
  
@@ -18,7 +17,7 @@ class UserLoginOrRegistration {
 	 function authenticate_user() {
         if( $_SESSION['state'] && ( $_SESSION['state'] === $_REQUEST['state'] ) ) {
             if( $_SESSION['state'] && ( $_SESSION['state'] === $_REQUEST['state'] ) ) {
-    $token_url = "https://graph.facebook.com/oauth/access_token?"
+    			$token_url = "https://graph.facebook.com/oauth/access_token?"
         . "client_id=" . $this->app_id . "&redirect_uri=" . urlencode( strstr( $this->current_url, '?', true ) )
         . "&client_secret=" . $this->app_secret . "&code=" . $_REQUEST['code'];
  
