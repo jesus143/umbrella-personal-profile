@@ -33,8 +33,9 @@ global $post_id,$currentAmount;
 //			print "<br> ontraport facebook email tag : f1583  " . $uPPUmbrellaPersonalProfile->getOntraportFaceBookEmailTag();
 //		endif;
 //
+
+
 //	print "<br> get facebook index " . $uPPUmbrellaPersonalProfile->getFaceBookImageIndex();
-//	print " ontraport fb email " . $uPPUmbrellaPersonalProfile->getOntraportFaceBookEmailTag();
 
 
 	?> 
@@ -407,7 +408,7 @@ global $post_id,$currentAmount;
 										<div <?php echo $class_watermark; ?> >
 											<?php if($uPPUmbrellaPersonalProfile->getFaceBookIsAuthenticated()):
 													if($uPPUmbrellaPersonalProfile->getFaceBookImageIndex() == 1) {
-														print "<img id='imageUploadPreview' src='".$uPPUmbrellaPersonalProfile->getFaceBookProfilePicPath()."?height=150&width=150' alt=''  />";
+														print "<img id='imageUploadPreview' src='".$uPPUmbrellaPersonalProfile->getFaceBookProfilePicPath()."?width=150&width=150' alt=''  />";
 													} else { ?>
 														<img id="imageUploadPreview" src="<?php if(!empty($featured)){echo $featured;}else{ echo get_stylesheet_directory_uri().'/images/avatar.png';}?>" alt="" />
 													 <?php
@@ -446,7 +447,7 @@ global $post_id,$currentAmount;
 
 										print '</div>';
 								  	else:
-										print '<div style="margin-top:34px;margin-left: 42px;">';
+										print '<div style="margin-top:34px;margin-left: 60px;">';
 
 											$uPPUmbrellaPersonalProfile->htmlPrintFbButton();
 

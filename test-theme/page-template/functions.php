@@ -10,13 +10,13 @@
 		define('OF_FILEPATH', STYLESHEETPATH);
 		define('OF_DIRECTORY', get_bloginfo('stylesheet_directory'));
 	}
-	
+
 	/* These files build out the options interface.  Likely won't need to edit these. */
 	require_once (OF_FILEPATH . '/admin/admin-functions.php');		// Custom functions and plugins
 	require_once (OF_FILEPATH . '/admin/admin-interface.php');		// Admin Interfaces (options,framework, seo)
-	include_once( OF_FILEPATH .'/facebook/registration.php' ); 
-	include_once( OF_FILEPATH .'/facebook/src/Facebook/autoload.php' ); 
-	//include_once( 'facebook/registration.php' ); 
+	include_once( OF_FILEPATH .'/facebook/registration.php' );
+	include_once( OF_FILEPATH .'/facebook/src/Facebook/autoload.php' );
+	//include_once( 'facebook/registration.php' );
 	/* These files build out the theme specific options and associated functions. */
 	require_once (OF_FILEPATH . '/admin/theme-options.php'); 		// Options panel settings and custom settings
 	require_once (OF_FILEPATH . '/admin/theme-functions.php'); 	// Theme actions based on options settings
@@ -24,9 +24,20 @@
 	if (function_exists('register_nav_menus')) {
 		register_nav_menus(array('primary' => 'Header Navigation'));
 	}
-	
+
 	wp_enqueue_script('jquery');
-	
+	function add_theme_scripts() {
+	  wp_enqueue_style( 'style', get_stylesheet_uri() );
+
+	  wp_enqueue_style( 'bootstrap-css', get_template_directory_uri() . '/css/bootstrap.css', array(), '1.1', 'all');
+	  wp_enqueue_style( 'bootstrap-css.min', get_template_directory_uri() . '/css/bootstrap-grid.css', array(), '1.1', 'all');
+
+	  wp_enqueue_script( 'util-script', get_template_directory_uri() . '/js/util.js', array ( 'jquery' ), 1.1, true);
+	  wp_enqueue_script( 'tether-script', 'https://npmcdn.com/tether@1.2.4/dist/js/tether.min.js', array ( 'jquery' ), 1.1, true);
+	  wp_enqueue_script( 'bootstrap.min', get_template_directory_uri() . '/js/bootstrap.min.js', array ( 'jquery' ), 1.1, true);
+	  //wp_enqueue_script( 'custome-script', get_template_directory_uri() . '/js/custome-script.js', array ( 'jquery' ), 1.1, true);
+	}
+	add_action( 'wp_enqueue_scripts', 'add_theme_scripts' );
 	function wp_new_excerpt($text)
 	{
 		if ($text == '')
@@ -62,8 +73,12 @@
 	}
 	add_action('wp_loaded','boot_session');
 	//Include your custom functions..
+
 	include 'functions_lead.php';
+	include 'functions_autosync.php';
 	include 'chat-pages/functions_chat.php';
+	include 'enquiries/functions_enquiry.php';
+
 	function op_query($url, $method, $data, $appID, $appKey){
 		$ch = curl_init( );
 		switch ($method){
@@ -73,7 +88,7 @@
 				curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json','Content-Length: ' . strlen(json_encode($data)), 'Api-Appid:' . $appID, 'Api-Key:' . $appKey));
 				curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
 				curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);				
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 				break;
 			}
 			case 'GET': {
@@ -86,11 +101,11 @@
 		}
 		$response  = curl_exec($ch);
 		curl_close($ch);
-		
+
 		return $response;
-	} 
+	}
 	//GET DOMAIN NAME
-	
+
 	function get_domain($url)
 	{
 	  $pieces = parse_url($url);
@@ -104,14 +119,14 @@
 	function add_query_vars($aVars) {
 		$aVars[] = "accountid"; // represents the name of the product category as shown in the URL
 		$aVars[] = "siteurl"; // represents the name of the product category as shown in the URL
-		$aVars[] = "add_charge"; 
-		$aVars[] = "account_number"; 
-		$aVars[] = "account_manager"; 
-		$aVars[] = "company_name"; 
-		$aVars[] = "category_type"; 
-		$aVars[] = "service_name"; 
-		$aVars[] = "add_quantity"; 
-		$aVars[] = "description"; 
+		$aVars[] = "add_charge";
+		$aVars[] = "account_number";
+		$aVars[] = "account_manager";
+		$aVars[] = "company_name";
+		$aVars[] = "category_type";
+		$aVars[] = "service_name";
+		$aVars[] = "add_quantity";
+		$aVars[] = "description";
 		$aVars[] = "pdf_year";
 		$aVars[] = "pdf_month";
 		$aVars[] = "pdf_accounts";
@@ -127,6 +142,8 @@
 		$aVars[] = "tags";
 		$aVars[] = "transactionid";
 		$aVars[] = "agent";
+		$aVars[] = "enquiryid";
+		$aVars[] = "error_data";
 		return $aVars;
 	}
 	// hook add_query_vars function into query_vars
@@ -139,9 +156,12 @@
 						'create-newpdf/([^/]+)/([^/]+)/([^/]+)-([^/]+)/([^/]+)/?$' => 'index.php?pagename=create-newpdf&pdf_year=$matches[1]&pdf_month=$matches[2]&pdf_accounts=$matches[3]&pdf_md5=$matches[4]&pdf_file=$matches[5]',
 						'chatpdf/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)/?$' => 'index.php?pagename=chatpdf&chat_id=$matches[1]&partner_id=$matches[2]&hash_id=$matches[3]&session_hash=$matches[4]&file_type=$matches[5]',
 						'leads/([^/]+)/([^/]+)/([^/]+)/?$' => 'index.php?pagename=leads&partnerid=$matches[1]&leadowner=$matches[2]&agent=$matches[3]&tags=$matches[4]',
-						'my-leads/([^/]+)/?$' => 'index.php?pagename=my-leads&transactionid=$matches[1]'						
-					); 
-		$aRules = $aNewRules + $aRules; 
+						'my-leads/([^/]+)/?$' => 'index.php?pagename=my-leads&transactionid=$matches[1]',
+						'enquiries/([^/]+)/([^/]+)/?$' => 'index.php?pagename=enquiries&partnerid=$matches[1]&enquiryid=$matches[2]',
+						'enquery-page-2/([^/]+)/([^/]+)/?$' => 'index.php?pagename=enquery-page-2&partnerid=$matches[1]&enquiryid=$matches[2]',
+						'login-error/([^/]+)/?$' => 'index.php?pagename=login-error&error_data=$matches[1]'
+					);
+		$aRules = $aNewRules + $aRules;
 		return $aRules;
 	}
 	// hook add_rewrite_rules function into rewrite_rules_array
@@ -152,15 +172,15 @@
 		if ( ! empty( $unfiltered ) ) {
 			$mimes[ 'swf' ] = 'application/x-shockwave-flash';
 		}
-		return $mimes; 
+		return $mimes;
 	}
-	add_filter( 'upload_mimes','demo' );*/ 
+	add_filter( 'upload_mimes','demo' );*/
 	function addBilling( ){
 		global $wpdb; // this is how you get access to the database
 		$fName		     = isset( $_POST[ 'fName' ] ) ? $_POST[ 'fName' ] : '';
 		$fAccount 		 = isset( $_POST[ 'fAccount' ] ) ? $_POST[ 'fAccount' ] : '';
 		$fService 		 = isset( $_POST[ 'fService' ] ) ? $_POST[ 'fService' ] : '';
-		$fCategory 		 = isset( $_POST[ 'fCategory' ] ) ? $_POST[ 'fCategory' ] : '';	
+		$fCategory 		 = isset( $_POST[ 'fCategory' ] ) ? $_POST[ 'fCategory' ] : '';
 		$fCharge 		 = isset( $_POST[ 'fCharge' ] ) ? $_POST[ 'fCharge' ] : '';
 		$fQuantity 		 = isset( $_POST[ 'fQuantity' ] ) ? $_POST[ 'fQuantity' ] : '';
 		$fDescription	 = isset( $_POST[ 'fDescription' ] ) ? $_POST[ 'fDescription' ] : '';
@@ -194,8 +214,8 @@
 			empty($fCharge)
 			|| empty( $fAccount )
 			|| empty( $fService)
-			|| empty( $fQuantity ) 
-			|| empty( $fCategory ) 
+			|| empty( $fQuantity )
+			|| empty( $fCategory )
 			|| empty( $fCharge)
 			|| empty( $fDescription )
 		){
@@ -209,13 +229,13 @@
 		}
 		else{
 			if( $fCategory == 'credit' ){
-				$totalBill=$fCharge*$fQuantity; 
-				if( $wpdb->insert( 
+				$totalBill=$fCharge*$fQuantity;
+				if( $wpdb->insert(
 					$wpdb->prefix.'billings',array(
 					'tbl_account_number' 		=> $fAccount,
 					'tbl_billing_name' 			=> $fName,
 					'tbl_services'				=> $fService ,
-					'tbl_payment_type'			=> $fCategory,				
+					'tbl_payment_type'			=> $fCategory,
 					'tbl_company'				=> $fCompany,
 					'tbl_credit'		 		=> $fCharge,
 					'tbl_charge'		 		=> 0,
@@ -246,7 +266,7 @@
 				else {
 					  echo ' Successfully saved!';
 					  $API_URL 		= 'http://api.ontraport.com/1/objects?'; //URL OF THE ONTRAPORT
-					  //DATA TO FETCH				  
+					  //DATA TO FETCH
 					  $API_DATA 	= array(
 					   'objectID'   => 0,
 					   'performAll' => 'true',
@@ -258,13 +278,13 @@
 					  //API DETAILS
 					  $API_KEY  = 'Kiok5B2tzM00Oqf';
 					  $API_ID  	= '2_7818_ubHppKG8C';
-					  
+
 					  //API RESULT
 					  $API_RESULT 	= op_query($API_URL, 'GET', $API_DATA, $API_ID, $API_KEY);
 					  $getName  	= json_decode($API_RESULT); //GET THE RESULT AND CONVERT TO JSON FORMAT
-					  
+
 					  $API_RESULT 	= null; //REASSIGN VALUE OF API RESULT TO NULL
-					  
+
 					  //API DATA TO PUT/UPDATE. NOTE: ObjectID must be 0 [0 = Contacts]; and id must be set and must be already registered in OntraPort, otherwise the result is fail.
 					  $API_DATA 		= array(
 					   'objectID'   	=> 0,
@@ -272,15 +292,15 @@
 					   'f1547' 			=> '£'.($fAccountBalance+$totalBill),
 					   'ServiceAge_499' => $serviceSold
 					  // 'firstname'  => 'Marvin' //Set firstname to new value. You can add more fields by adding more here. Not just firstname but all fields except the id.
-					  );				  
+					  );
 					  //GET PUT RESULT
-					  $API_RESULT 	= op_query( $API_URL, 'PUT', $API_DATA, $API_ID, $API_KEY );				  
+					  $API_RESULT 	= op_query( $API_URL, 'PUT', $API_DATA, $API_ID, $API_KEY );
 					  //IF OBJECT NOT FOUND, DISPLAY ERROR MESSAGE
 					  if( $API_RESULT == "Object not found" ){
 					   echo 'FAILED TO PUT/UPDATE DATA!';
 					   die( );
 					  }
-				  
+
 				}
 			}
 			else{
@@ -290,7 +310,7 @@
 					'tbl_account_number' 		=> $fAccount,
 					'tbl_billing_name' 			=> $fName,
 					'tbl_services'				=> $fService ,
-					'tbl_payment_type'			=> $fCategory,				
+					'tbl_payment_type'			=> $fCategory,
 					'tbl_company'				=> $fCompany,
 					'tbl_credit'		 		=> 0,
 					'tbl_charge'		 		=> $fCharge,
@@ -322,7 +342,7 @@
 				   $totalBill=$fCharge*$fQuantity;
 				   echo ' Successfully saved!';
 					  $API_URL 		= 'http://api.ontraport.com/1/objects?'; //URL OF THE ONTRAPORT
-					  //DATA TO FETCH				  
+					  //DATA TO FETCH
 					  $API_DATA 	= array(
 					   'objectID'   => 0,
 					   'performAll' => 'true',
@@ -337,19 +357,19 @@
 					  //API RESULT
 					  $API_RESULT 	= op_query( $API_URL, 'GET', $API_DATA, $API_ID, $API_KEY );
 					  $getName  	= json_decode( $API_RESULT ); //GET THE RESULT AND CONVERT TO JSON FORMAT
-					  
+
 					  $API_RESULT 	= null; //REASSIGN VALUE OF API RESULT TO NULL
-					  
+
 					  //API DATA TO PUT/UPDATE. NOTE: ObjectID must be 0 [0 = Contacts]; and id must be set and must be already registered in OntraPort, otherwise the result is fail.
 					  $API_DATA 	= array(
 					   'objectID'   	=> 0,
 					   'id'  	 		=> $fAccount,
 					   'f1547' 			=> '£'.($fAccountBalance-$totalBill),
-					   'ServiceAge_499' => $serviceSold 
+					   'ServiceAge_499' => $serviceSold
 					  // 'firstname'  => 'Marvin' //Set firstname to new value. You can add more fields by adding more here. Not just firstname but all fields except the id.
-					  );				  
+					  );
 					  //GET PUT RESULT
-					  $API_RESULT 	= op_query($API_URL, 'PUT', $API_DATA, $API_ID, $API_KEY);				  
+					  $API_RESULT 	= op_query($API_URL, 'PUT', $API_DATA, $API_ID, $API_KEY);
 					  //IF OBJECT NOT FOUND, DISPLAY ERROR MESSAGE
 					  if( $API_RESULT == "Object not found" ){
 					   echo 'FAILED TO PUT/UPDATE DATA!';
@@ -364,8 +384,8 @@
 	/**
 	 * Add cutom field to registration form
 	 */
-	add_action( 'show_user_profile', 'extra_user_profile_fields' );
-	add_action( 'edit_user_profile', 'extra_user_profile_fields' );
+	//add_action( 'show_user_profile', 'extra_user_profile_fields' );
+	//add_action( 'edit_user_profile', 'extra_user_profile_fields' );
 	/*function extra_user_profile_fields( $user ) { ?>
 		<h3><?php _e("Level", "blank"); ?></h3>
 		<table class="form-table">
@@ -392,54 +412,60 @@
 	}
 
 	if( function_exists( 'acf_add_options_page' ) ) {
-		
+
 		$parentCustomSettings = acf_add_options_page(array(
 			'page_title' 	=> 'General Custom Settings',
 			'menu_title' 	=> 'Custom Settings',
 			'icon_url' 		=> 'dashicons-admin-settings',
 			'redirect' 		=> false
 		));
-		
+
 		acf_add_options_sub_page(array(
 			'page_title' 	=> 'Live 121 Chat Settings',
 			'menu_title' 	=> 'Live Chat',
 			'parent_slug' 	=> $parentCustomSettings['menu_slug']
 		));
-		
+
 		acf_add_options_sub_page(array(
 			'page_title' 	=> 'OntraPort API Settings',
 			'menu_title' 	=> 'Ontraport API Keys',
 			'parent_slug' 	=> $parentCustomSettings['menu_slug']
 		));
-		
+
 		$parentCustomContent = acf_add_options_page(array(
 			'page_title' 	=> 'General Custom Contents',
 			'menu_title' 	=> 'Custom Contents',
 			'icon_url' 		=> 'dashicons-align-center',
 			'redirect' 		=> false
 		));
-		
+
 		acf_add_options_sub_page(array(
 			'page_title' 	=> 'Top-up Page',
 			'menu_title' 	=> 'Top-up Page',
 			'parent_slug' 	=> $parentCustomContent['menu_slug']
 		));
-		
+
 		acf_add_options_sub_page(array(
 			'page_title' 	=> 'Transcripts Page',
 			'menu_title' 	=> 'Transcripts Page',
 			'parent_slug' 	=> $parentCustomContent['menu_slug']
 		));
-		
+
 		acf_add_options_sub_page(array(
 			'page_title' 	=> 'Transcripts Page',
 			'menu_title' 	=> 'Transcripts Page',
 			'parent_slug' 	=> $parentCustomContent['menu_slug']
 		));
-		
+
 		acf_add_options_sub_page(array(
 			'page_title' 	=> 'Live 121 Chat Email Contents',
 			'menu_title' 	=> 'Chat Email Script',
+			'parent_slug' 	=> $parentCustomContent['menu_slug']
+		));
+
+		acf_add_options_sub_page(array(
+			'page_title' 	=> 'Chat Settings Page',
+			'menu_title' 	=> 'Chat Page Contents',
 			'parent_slug' 	=> $parentCustomContent['menu_slug']
 		));
 	}
@@ -456,9 +482,9 @@
 		return ob_get_clean( );
 	}
 	add_shortcode('NAME_USER','user_name');// shorcode to be add
-	
-	
-	
+
+
+
 	function generated_scripts( ){
 		ob_start( );
 		//php functionalities here
@@ -513,7 +539,7 @@
 		$password   = isset( $_POST[ 'password' ] ) ? $_POST[ 'password' ] : '';
 		$customAPIKEY  = get_field('custom_api_key','option');// name of the admin
 		$customAPIID  = get_field('custom_api_id','option');// Email Title for the admin
-		$postargs 	= "http://api.ontraport.com/1/objects?objectID=0&performAll=true&sortDir=asc&condition=email%3D'".$email."'&searchNotes=true";
+		$postargs 	= "https://api.ontraport.com/1/objects?objectID=0&sortDir=asc&condition=email%3D'".$email."'&searchNotes=true";
 		//$postargs 		= "http://api.ontraport.com/1/objects?objectID=0&performAll=true&sortDir=asc&condition=email%3D'testing@umbrellasupport.co.uk'&searchNotes=true";
 		$request		= "";
 		$session 		= curl_init( );
@@ -524,11 +550,11 @@
 		  'Api-Appid:'.$customAPIID,
 		  'Api-Key:'.$customAPIKEY
 		));
-		$response = curl_exec( $session ); 
+		$response = curl_exec( $session );
 		curl_close( $session );
 		//header("Content-Type: text");
 		//echo "CODE: " . $response;
-		$getName 		= json_decode( $response );  
+		$getName 		= json_decode( $response );
 		$acount_id		=$getName->data[0]->id;
 		$sendID  	 	= $getName->data[0]->id;
 		$sendName 	 	= $getName->data[0]->firstname.' '.$getName->data[0]->lastname;
@@ -593,23 +619,35 @@
 					  $user_info = get_userdata($userID__);
 					  $user_id  = $user_info->ID;
 					 // var_dump($login);
+					 //echo 'Sulod!';
 					}
-					$user = get_user_by( 'login', $email );
+					//echo 'userID__: ' . $userID__ . '; user_id: ' . $u . '<br />';
+					$user = get_user_by( 'email', $email );
+					//echo "Email: " . $email . "; User: " . $user . "; Password: " . $password . "; Data: " . $user->ID . "; " . wp_check_password( $password, $user->data->user_pass, $user->ID);
 					if ( $user && wp_check_password( $password, $user->data->user_pass, $user->ID) ){
-						$creds = array( );
-						$creds[ 'user_login' ] = $email ;
+						$creds = array();
+
+
+						$creds[ 'user_login' ] = $user->data->user_login ;
 						$creds[ 'user_password' ] = $password;
+
 					   // $creds[ 'remember' ] = true;
 						$user = wp_signon( $creds, false );
 						if ( is_wp_error($user) ){
+
+							//echo 'Sulod 2 Err';
 							echo $user->get_error_message( );
-							}
+							exit();
+						}
+
+
 							$update_post = array(
 							'post_title'    => $sendName,
-							'post_status'   => 'publish',          
-							'post_type'     => 'client' 
+							'post_status'   => 'publish',
+							'post_type'     => 'client'
 							);
 							$postId = wp_update_post($update_post);
+
 							switch($sendLevel){
 							  case 1		: $level='Level 1'; break;
 							  case 2		: $level='Level 2'; break;
@@ -627,9 +665,9 @@
 							update_post_meta( $postId, 'home_phone', $sendHphone);
 							update_post_meta( $postId, 'mobile_phone', $sendCphone);
 							update_post_meta( $postId, 'company_address_line_1', $sendAddress);
-							update_post_meta( $postId, 'company_address_line_2', $sendAddress); 
-							update_post_meta( $postId, 'company_city', $sendCity );				
-							update_post_meta( $postId, 'company_town', $sendTown);							
+							update_post_meta( $postId, 'company_address_line_2', $sendAddress);
+							update_post_meta( $postId, 'company_city', $sendCity );
+							update_post_meta( $postId, 'company_town', $sendTown);
 							update_post_meta( $postId, 'company_postcode', $sendZip);
 							update_post_meta( $postId, 'company_name', $sendCompany);
 							update_post_meta( $postId, 'company_number', $sendCompanynum);
@@ -644,19 +682,21 @@
 							$sql = $WP_CON->prepare('SELECT COUNT(*) AS total FROM wp_user_profiles_mirror WHERE partner_id = :partnerID');
 							$sql->execute(array(':partnerID' => $acount_id));
 							$result = $sql->fetchObject();
+
+
 							if($result->total > 0) {
 								//$status=0;
 							   // echo 'Hello';
 								try {
-								$sql = "UPDATE wp_user_profiles_mirror   
-										   SET full_name  = :fullName,  
-										       home_phone = :homePhone, 
-										       mobile_phone = :mobilePhone, 
-										       postcode = :postCode, 
-										       company_name = :companyName 
+								$sql = "UPDATE wp_user_profiles_mirror
+										   SET full_name  = :fullName,
+										       home_phone = :homePhone,
+										       mobile_phone = :mobilePhone,
+										       postcode = :postCode,
+										       company_name = :companyName
 										 WHERE partner_id = :user_id
 									  ";
-										
+
 								 $statement = $WP_CON->prepare($sql);
 								 $statement->bindValue(":user_id", $acount_id);
 								 $statement->bindValue(":fullName", $sendName);
@@ -672,6 +712,7 @@
 								}
 								catch(PDOException $e) {
 								  echo $e->getMessage();
+								  exit();
 								}
 							}
 							try{
@@ -694,22 +735,23 @@
 												ui_URL,
 												uid_PartnerID,
 												ui_DATEUPLOAD) VALUES (
-												:uiHOST, 
-												:uiPATH, 
-												:uiURL, 
+												:uiHOST,
+												:uiPATH,
+												:uiURL,
 												:uidPartnerID,
 												:uiDATEUPLOAD)";
-																			 
-									$stmt = $WP_CON->prepare($sql);			 
-									$stmt->bindParam(':uiHOST', $urlMerror, PDO::PARAM_STR);		
-									$stmt->bindParam(':uiPATH', $urlMerror, PDO::PARAM_STR);		
-									$stmt->bindParam(':uiURL', $urlImage, PDO::PARAM_STR);	
+
+									$stmt = $WP_CON->prepare($sql);
+									$stmt->bindParam(':uiHOST', $urlMerror, PDO::PARAM_STR);
+									$stmt->bindParam(':uiPATH', $urlMerror, PDO::PARAM_STR);
+									$stmt->bindParam(':uiURL', $urlImage, PDO::PARAM_STR);
 									$stmt->bindParam(':uidPartnerID', $acount_id, PDO::PARAM_STR);
 									$stmt->bindParam(':uiDATEUPLOAD', date ("Y-m-d H:i:s"), PDO::PARAM_STR);
-									// use PARAM_STR although a number										 
+									// use PARAM_STR although a number
 									$stmt->execute();
 									}catch(PDOException $err){
 									echo "Error: " . $err->getMessage();
+									exit();
 									}
 								//$WP_CON = null;
 							}
@@ -732,28 +774,30 @@
 												user_type,
 												customer_id,
 												allow_remarketing) VALUES (
-												:userEmail, 
-												:userPassword, 
-												:userType, 
-												:userID, 
-												:userAllow)";							 
-									$stmtUser = $WP_CON->prepare($saveUser);			 
-									$stmtUser->bindParam(':userEmail', $sendEmail, PDO::PARAM_STR);		
-									$stmtUser->bindParam(':userPassword', md5($password), PDO::PARAM_STR);		
-									$stmtUser->bindParam(':userType', $merchant, PDO::PARAM_STR);	
+												:userEmail,
+												:userPassword,
+												:userType,
+												:userID,
+												:userAllow)";
+									$stmtUser = $WP_CON->prepare($saveUser);
+									$stmtUser->bindParam(':userEmail', $sendEmail, PDO::PARAM_STR);
+									$stmtUser->bindParam(':userPassword', md5($password), PDO::PARAM_STR);
+									$stmtUser->bindParam(':userType', $merchant, PDO::PARAM_STR);
 									$stmtUser->bindParam(':userID', $acount_id, PDO::PARAM_STR);
 									$stmtUser->bindParam(':userAllow', $userAllow, PDO::PARAM_STR);
-									// use PARAM_STR although a number										 
-									$stmtUser->execute();			
+									// use PARAM_STR although a number
+									$stmtUser->execute();
 								}catch(PDOException $err){
 									echo "Error: " . $err->getMessage();
+									exit();
 								}
 								//$WP_CON = null;
 							}
+
 							echo '<div class="message-success">';
 							echo '<div style="position:relative;">';
 							echo '<div style="text-align:left" class="success-message-right">';
-							echo '<img src="'.get_template_directory_uri( ).'/images/Loading-Circle-Large-Red.gif">';	
+							echo '<img src="'.get_template_directory_uri( ).'/images/Loading-Circle-Large-Red.gif">';
 							echo '</div>';
 							echo '<div class="success-message-left">';
 							echo '<h2><img alt="umbrella support centre" src="'.get_template_directory_uri().'/images/Umbrella-logo.png"></h2>';
@@ -764,7 +808,7 @@
 							echo '</div>';
 							echo '</div>';
 					}else{
-					   echo '<p class="error-message"><b>✘</b>Login failed!</p>';
+					   echo '<p class="error-message"><b>✘</b>Login failed!'.wp_check_password( $password, $user->data->user_pass, $user->ID) .'</p>';
 					}
 				}
 			}else{
@@ -775,8 +819,8 @@
 				}
 				$logo_post = array(
 				'post_title'    => $sendCompanyTitle,
-				'post_status'   => 'publish',          
-				'post_type'     => 'logo' 
+				'post_status'   => 'publish',
+				'post_type'     => 'logo'
 				);
 				$status_logo="Pending";
 				//insert the the post into database by passing $new_post to wp_insert_post
@@ -787,8 +831,8 @@
 				//the array of arguements to be inserted with wp_insert_post
 				$new_post = array(
 				'post_title'    => $sendName,
-				'post_status'   => 'publish',          
-				'post_type'     => 'client' 
+				'post_status'   => 'publish',
+				'post_type'     => 'client'
 				);
 				//insert the the post into database by passing $new_post to wp_insert_post
 				//store our post ID in a variable $pid
@@ -803,25 +847,25 @@
 				}
 				//we now use $pid (post id) to help add out post meta data
 				add_post_meta( $pid, 'full_name', $sendName, true );
-				add_post_meta( $pid, 'email_address', $sendEmail, true );				
-				add_post_meta( $pid, 'town', $sendTown, true );														
+				add_post_meta( $pid, 'email_address', $sendEmail, true );
+				add_post_meta( $pid, 'town', $sendTown, true );
 				add_post_meta( $pid, 'city', $sendCity, true );
 				add_post_meta( $pid, 'country', $sendCountry, true );
 				add_post_meta( $pid, 'postcode',$sendZip, true );
 				add_post_meta( $pid, 'mobile_phone',$sendCphone, true );
-				add_post_meta( $pid, 'home_phone',$sendHphone, true );				
+				add_post_meta( $pid, 'home_phone',$sendHphone, true );
 				add_post_meta( $pid, 'company_city',$sendCity, true );
 				add_post_meta( $pid, 'company_town',$sendTown, true );
 				add_post_meta( $pid, 'company_name',$sendCompany, true );
 				add_post_meta( $pid, 'company_website', $sendwebsite, true );
 				add_post_meta( $pid, 'company_number', $sendCompanynum, true );
 				add_post_meta( $pid, 'company_postcode',$sendZip, true );
-				add_post_meta( $pid, 'company_business_email',$sendBemail, true );				
+				add_post_meta( $pid, 'company_business_email',$sendBemail, true );
 				add_post_meta( $pid, 'company_office_phone',$sendOphone, true );
 				add_post_meta( $pid, 'company_mobile_phone',$sendCphone, true );
 				add_post_meta( $pid, 'account_manager', $sendAgent, true);
 				add_post_meta( $pid, 'package_level', $level, true );
-				add_post_meta( $pid, 'partner_id', $sendID, true );	
+				add_post_meta( $pid, 'partner_id', $sendID, true );
 				add_post_meta( $pid, 'account_balance', $sendAmount, true );
 				add_post_meta( $pid, 'package', $sendPackagedata, true );
 				$sql = $WP_CON->prepare('SELECT COUNT(*) AS total FROM wp_user_profiles_mirror WHERE partner_id = :partnerID');
@@ -861,19 +905,19 @@
 									ui_URL,
 									uid_PartnerID,
 									ui_DATEUPLOAD) VALUES (
-									:uiHOST, 
-									:uiPATH, 
-									:uiURL, 
+									:uiHOST,
+									:uiPATH,
+									:uiURL,
 									:uidPartnerID,
 									:uiDATEUPLOAD)";
-																 
-						$stmt = $WP_CON->prepare($sql);			 
-						$stmt->bindParam(':uiHOST', $urlMerror, PDO::PARAM_STR);		
-						$stmt->bindParam(':uiPATH', $urlMerror, PDO::PARAM_STR);		
-						$stmt->bindParam(':uiURL', $urlImage, PDO::PARAM_STR);	
+
+						$stmt = $WP_CON->prepare($sql);
+						$stmt->bindParam(':uiHOST', $urlMerror, PDO::PARAM_STR);
+						$stmt->bindParam(':uiPATH', $urlMerror, PDO::PARAM_STR);
+						$stmt->bindParam(':uiURL', $urlImage, PDO::PARAM_STR);
 						$stmt->bindParam(':uidPartnerID', $acount_id, PDO::PARAM_STR);
 						$stmt->bindParam(':uiDATEUPLOAD', date ("Y-m-d H:i:s"), PDO::PARAM_STR);
-						// use PARAM_STR although a number										 
+						// use PARAM_STR although a number
 						$stmt->execute();
 						}catch(PDOException $err){
 						echo "Error: " . $err->getMessage();
@@ -899,19 +943,19 @@
 									user_type,
 									customer_id,
 									allow_remarketing) VALUES (
-									:userEmail, 
-									:userPassword, 
-									:userType, 
-									:userID, 
-									:userAllow)";							 
-						$stmtUser = $WP_CON->prepare($saveUser);			 
-						$stmtUser->bindParam(':userEmail', $sendEmail, PDO::PARAM_STR);		
-						$stmtUser->bindParam(':userPassword', md5($password), PDO::PARAM_STR);		
-						$stmtUser->bindParam(':userType', $merchant, PDO::PARAM_STR);	
+									:userEmail,
+									:userPassword,
+									:userType,
+									:userID,
+									:userAllow)";
+						$stmtUser = $WP_CON->prepare($saveUser);
+						$stmtUser->bindParam(':userEmail', $sendEmail, PDO::PARAM_STR);
+						$stmtUser->bindParam(':userPassword', md5($password), PDO::PARAM_STR);
+						$stmtUser->bindParam(':userType', $merchant, PDO::PARAM_STR);
 						$stmtUser->bindParam(':userID', $acount_id, PDO::PARAM_STR);
 						$stmtUser->bindParam(':userAllow', $userAllow, PDO::PARAM_STR);
-						// use PARAM_STR although a number										 
-						$stmtUser->execute();								 
+						// use PARAM_STR although a number
+						$stmtUser->execute();
 						}catch(PDOException $err){
 						echo "Error: " . $err->getMessage();
 						}
@@ -927,7 +971,7 @@
 				'display_name'	 => $sendName,
 				'role'			 => 'subscriber'
 				);
-				
+
 				$user_id=wp_insert_user($userargs);
 				$current_user = get_user_by( 'id', $user_id );
 				// set the WP login cookie
@@ -935,7 +979,7 @@
 				echo '<div class="message-success">';
 				echo '<div style="position:relative;">';
 				echo '<div style="text-align:left" class="success-message-right">';
-				echo '<img src="'.get_template_directory_uri( ).'/images/Loading-Circle-Large-Red.gif">';	
+				echo '<img src="'.get_template_directory_uri( ).'/images/Loading-Circle-Large-Red.gif">';
 				echo '</div>';
 				echo '<div class="success-message-left">';
 				echo '<h2><img alt="umbrella support centre" src="'.get_template_directory_uri().'/images/Umbrella-logo.png"></h2>';
@@ -1007,7 +1051,7 @@
 		$companyWebsite		= isset( $_POST[ 'companyWebsite' ] ) ? $_POST[ 'companyWebsite' ] : '';
 		$postID				= isset( $_POST[ 'post_id' ] ) ? $_POST[ 'post_id' ] : '';
 		$slug				=sanitize_title($name);
-		$filename			= $_POST[ 'post_id' ] . '-' . date("U") .  $_FILES[ "thumbnailImage" ][ "name" ];		
+		$filename			= $_POST[ 'post_id' ] . '-' . date("U") .  $_FILES[ "thumbnailImage" ][ "name" ];
 		if(!empty($pID)){
 			//var_dump($fifthRating);
 			$postdata = array(
@@ -1045,32 +1089,38 @@
 			update_post_meta( $busID, 'fifth_rating', $fifthRating);
 			update_post_meta( $busID, 'company_description', $companyDescrioption);
 			if( isset( $_FILES[ "thumbnailImage" ][ "type" ] ) ){
+				//var_dump($_FILES[ "thumbnailImage" ][ "name" ]);
 				$validextensions 	= array("jpeg", "jpg", "png");
 				$temporary 			= explode( ".", $_FILES[ "thumbnailImage" ][ "name" ] );
+				//var_dump($temporary);
 				$file_extension 	= end( $temporary );
+				var_dump($_FILES[ "thumbnailImage" ][ "error" ]);
+
 				if ( ( ( $_FILES[ "thumbnailImage" ][ "type" ] == "image/png") || ( $_FILES[ "thumbnailImage" ][ "type" ] == "image/jpg" ) || ( $_FILES[ "thumbnailImage" ][ "type" ] == "image/jpeg")
 				) && ( $_FILES[ "thumbnailImage" ][ "size" ] < 400000)//Approx. 100kb files can be uploaded.
 				&& in_array($file_extension, $validextensions)) {
 					if ($_FILES[ "thumbnailImage" ][ "error" ] > 0){
-						echo "Return Code: " . $_FILES[ "fthumbnailImage" ][ "error" ] . "<br/><br/>";
+						echo "Return Code: " . $_FILES[ "thumbnailImage" ][ "error" ] . "<br/><br/>";
 					}else{
 						if (file_exists(get_template_directory_uri( )."/page-template/uploads/".$_FILES[ 'thumbnailImage' ][ 'name' ])) {
 							echo $_FILES[ "thumbnailImage" ][ "name" ] . " <span id='invalid'><b>already exists.</b></span> ";
 						}else{
 							$sourcePath = $_FILES[ "thumbnailImage" ][ "name" ]; // Storing source path of the file in a variable
 							$targetPath = get_template_directory_uri( )."/page-template/uploads/".$_FILES[ 'thumbnailImage' ][ 'name' ]; // Target path where file is to be stored
-							
+
 							if ( ! function_exists( 'wp_handle_upload' ) ) {
 								require_once( ABSPATH . 'wp-admin/includes/file.php' );
 							}
 
 							$uploadedfile 	= $_FILES[ "thumbnailImage" ];
-							
-							
+
+							//var_dump($uploadedfile);
+
 							$upload_overrides = array( 'test_form' => false, 'unique_filename_callback' => 'my_cust_filename');
-							
+
 							add_filter('upload_dir', 'upload_location_directory');
 							$movefile 		= wp_handle_upload( $uploadedfile, $upload_overrides );
+
 							//echo $movefile[ 'file' ] . '<br />';
 							remove_filter('upload_dir', 'upload_location_directory');
 							if ( $movefile && ! isset( $movefile[ 'error' ] ) ) {
@@ -1085,16 +1135,16 @@
 								if($resultImage->totalImage > 0) {
 								   // echo 'Hello';
 									try {
-									/* $sql = "UPDATE p_user_imguploads  
-										  ('ui_HOST','ui_PATH','ui_URL','uid_PartnerID','ui_DATEUPLOAD') 
+									/* $sql = "UPDATE p_user_imguploads
+										  ('ui_HOST','ui_PATH','ui_URL','uid_PartnerID','ui_DATEUPLOAD')
 										  VALUES (:host, :url, :partnerID, :dateUpdate);
 										  ";*/
-									$sqlUpdateimage = "UPDATE wp_user_imguploads   
+									$sqlUpdateimage = "UPDATE wp_user_imguploads
 													   SET ui_HOST = :host,
 														   ui_PATH = :url,
 														   ui_URL  = :url,
 														   uid_PartnerID = :partnerID,
-														   ui_DATEUPLOAD = :dateUpdate 
+														   ui_DATEUPLOAD = :dateUpdate
 													 WHERE uid_PartnerID = :user_id
 												  ";
 									 $statementImage = $WP_CON->prepare($sqlUpdateimage);
@@ -1114,7 +1164,7 @@
 									  echo $e->getMessage();
 									}
 								}
-								else{ 
+								else{
 									global $WP_CON;
 									$status=0;
 									try {
@@ -1144,7 +1194,7 @@
 								echo $uploadedfile . '<br />';
 								echo $movefile[ 'error' ];
 							}
-							
+
 						}
 					}
 				}
@@ -1163,24 +1213,24 @@
 				}
 				if($results->totalUser > 0) {
 					try {
-					  $sqlmerror = "UPDATE wp_user_profiles_mirror   
+					  $sqlmerror = "UPDATE wp_user_profiles_mirror
 							   SET partner_id = :partnerID,
 								   full_name = :fullName,
 								   email_address  = :emailAddress,
 								   home_phone = :homePhone,
-								   mobile_phone = :mobilePhone, 
-								   postcode	 = :postCode, 
-								   company_name	 = :companyName, 
-								   company_description = :companyDescription, 
-								   company_postcode = :companyPostcode, 
-								   ratings1 = :ratingOne, 
-								   ratings2 = :ratingTwo, 
-								   ratings3 = :ratingThree, 
-								   ratings4 = :ratingFour, 
-								   ratings5 = :ratingFive 
+								   mobile_phone = :mobilePhone,
+								   postcode	 = :postCode,
+								   company_name	 = :companyName,
+								   company_description = :companyDescription,
+								   company_postcode = :companyPostcode,
+								   ratings1 = :ratingOne,
+								   ratings2 = :ratingTwo,
+								   ratings3 = :ratingThree,
+								   ratings4 = :ratingFour,
+								   ratings5 = :ratingFive
 							 WHERE partner_id = :user_id
 						  ";
-							
+
 					 $statementProfile = $WP_CON->prepare($sqlmerror);
 					 $statementProfile -> bindValue(":user_id", $pID);
 					 $statementProfile -> bindValue(":fullName", $name);
@@ -1225,7 +1275,7 @@
 				  $customAPIKEY  = get_field('custom_api_key','option');// name of the admin
 				  $customAPIID  = get_field('custom_api_id','option');// Email Title for the admin
 				  $API_URL 		= 'http://api.ontraport.com/1/objects?'; //URL OF THE ONTRAPORT
-				  //DATA TO FETCH				  
+				  //DATA TO FETCH
 				  $API_DATA 	= array(
 				   'objectID'   => 0,
 				   'performAll' => 'true',
@@ -1237,11 +1287,11 @@
 				  //API DETAILS
 				  $API_KEY  = $customAPIKEY;
 				  $API_ID  	= $customAPIID;
-				  
+
 				  //API RESULT
 				  $API_RESULT 	= op_query($API_URL, 'GET', $API_DATA, $API_ID, $API_KEY);
 				  $getName  	= json_decode($API_RESULT); //GET THE RESULT AND CONVERT TO JSON FORMAT
-				  
+
 				  $API_RESULT 	= null; //REASSIGN VALUE OF API RESULT TO NULL
 				 /* switch($level){
 					  case 'Level 1': $levelPackage=1; break;
@@ -1256,20 +1306,20 @@
 				   'objectID'   			=> 0,
 				   'id'  	 				=> $pID,
 				   'cell_phone' 			=> $bpmobilePhone, //Set to new value. You can add more fields by adding more here. Not just firstname but all fields except the id.
-				   'office_phone' 			=> $bpofficePhone, 
-				   'company' 				=> $companyName, 
-				   'f1564' 					=> $companyNumber, 
+				   'office_phone' 			=> $bpofficePhone,
+				   'company' 				=> $companyName,
+				   'f1564' 					=> $companyNumber,
 				   'city'  					=> $bpcity,
 				   'Town_340'  				=> $bptown,
 				   'County_456'  			=> $bpcountry,
 				   'website'  			    => $companyWebsite,
 				   'zip' 					=> $bppostcode,
-				   'address' 				=> $bpaddressone,  
-				   'address2' 				=> $bpaddresstwo,  
+				   'address' 				=> $bpaddressone,
+				   'address2' 				=> $bpaddresstwo,
 				   'f1556'					=> $emailAddress
-				  );				  
+				  );
 				  //GET PUT RESULT
-				  $API_RESULT 	= op_query( $API_URL, 'PUT', $API_DATA, $API_ID, $API_KEY );				  
+				  $API_RESULT 	= op_query( $API_URL, 'PUT', $API_DATA, $API_ID, $API_KEY );
 				  //IF OBJECT NOT FOUND, DISPLAY ERROR MESSAGE
 				  if( $API_RESULT == "Object not found" ){
 				   echo 'FAILED TO PUT/UPDATE DATA!';
@@ -1277,16 +1327,16 @@
 				  }
 				 echo '<div class="business-message-success">';
 				 echo '<span><b>✓</b>Success! Details updated.</span>';
-				 echo '</div>'; 
+				 echo '</div>';
 		}else{
 			echo '<div class="business-message-error">';
 			echo '<span>The partner ID should not empty</span>';
 			echo '</div>';
 		}
-		die( ); 
+		die( );
 	}
 	add_action( 'wp_ajax_businessProfileProcess', 'businessProfileProcess' );
-	
+
 	function upload_location_directory($DIR){
 		return array(
 			'path'   => $DIR[ 'basedir' ] . '/imageuploads',
@@ -1353,7 +1403,7 @@
 		$ratingTwo		 		 	 		= get_field('second_rating', $post_id);
 		$ratingThree		 		 	 	= get_field('third_rating', $post_id);
 		$ratingFour		 		 	 		= get_field('fourth_rating', $post_id);
-		$ratingFive		 		 	 		= get_field('fifth_rating', $post_id);	
+		$ratingFive		 		 	 		= get_field('fifth_rating', $post_id);
 		$reviewUrl	 		 	 			= get_field('reviews_url_link', $post_id);
 		$photosUrl	 		 	 			= get_field('photos_url_link', $post_id);
 		$accreditationUrl	 		 	 	= get_field('accreditations_url_link', $post_id);
@@ -1371,8 +1421,8 @@
 		wp_update_post( $postdata );
 		?>
 		<?php
-		// vars	
-		$company_categories = get_field('company_categories',$post_id); 
+		// vars
+		$company_categories = get_field('company_categories',$post_id);
 		$field = get_field_object('company_categories',$post_id);
 		$choices = $field['choices'];
 		// check
@@ -1381,16 +1431,16 @@
 		$result = $sqlTrade->fetchObject();
 		if($result->total > 0) {
 			try{
-				$sqlUpdate = "UPDATE wp_trade_mirror  
-						   SET trade_status = :tradeStats 
+				$sqlUpdate = "UPDATE wp_trade_mirror
+						   SET trade_status = :tradeStats
 						 WHERE partner_id = :user_id AND
 							   trade = :trade_cat
 					  ";
 				$stmt = $WP_CON->prepare($sqlUpdate);
 				foreach ($choices as $value => $label) {
 					$id = $partnerID;
-					$stmt->bindparam(":user_id", $id, PDO::PARAM_STR); 
-					
+					$stmt->bindparam(":user_id", $id, PDO::PARAM_STR);
+
 					if (in_array($value, $company_categories)) {
 						$val = 'Enable';
 						$stmt->bindparam(':tradeStats', $val, PDO::PARAM_STR);
@@ -1398,7 +1448,7 @@
 						$val = 'Disabled';
 						$stmt->bindparam(':tradeStats', $val, PDO::PARAM_STR);
 					}
-					$stmt->bindparam(":trade_cat", $value, PDO::PARAM_STR); 
+					$stmt->bindparam(":trade_cat", $value, PDO::PARAM_STR);
 					$stmt->execute();
 				}
 			} catch (PDOException $e) {
@@ -1428,25 +1478,25 @@
 		$results = $sqlMerror->fetchObject();
 		if($results->totals > 0) {
 			try {
-			$sqlMerror = "UPDATE wp_user_profiles_mirror   
+			$sqlMerror = "UPDATE wp_user_profiles_mirror
 					   SET partner_id = :partnerIDS,
 						   full_name = :fullName,
 						   email_address  = :emailAddress,
 						   home_phone = :homePhone,
-						   mobile_phone = :mobilePhone, 
-						   postcode	 = :postCode, 
-						   company_name	 = :companyName, 
-						   company_description = :companyDescription, 
-						   company_postcode = :companyPostcode, 
-						   ratings1 = :ratingOne, 
-						   ratings2 = :ratingTwo, 
-						   ratings3 = :ratingThree, 
-						   ratings4 = :ratingFour, 
+						   mobile_phone = :mobilePhone,
+						   postcode	 = :postCode,
+						   company_name	 = :companyName,
+						   company_description = :companyDescription,
+						   company_postcode = :companyPostcode,
+						   ratings1 = :ratingOne,
+						   ratings2 = :ratingTwo,
+						   ratings3 = :ratingThree,
+						   ratings4 = :ratingFour,
 						   ratings5 = :ratingFive,
-						   reviews_url = :reviewsUrl, 
-						   photos_url = :photosUrl, 
-						   accreditations_url = :accreditationsUrl, 
-						   checks_url = :checksUrl 						   
+						   reviews_url = :reviewsUrl,
+						   photos_url = :photosUrl,
+						   accreditations_url = :accreditationsUrl,
+						   checks_url = :checksUrl
 					 WHERE partner_id = :user_id
 				  ";
 			 $statement = $WP_CON->prepare($sqlMerror);
@@ -1521,7 +1571,7 @@
 			  $customAPIKEY  = get_field('custom_api_key','option');// name of the admin
 			  $customAPIID  = get_field('custom_api_id','option');// Email Title for the admin
 			  $API_URL 		= 'http://api.ontraport.com/1/objects?'; //URL OF THE ONTRAPORT
-			  //DATA TO FETCH				  
+			  //DATA TO FETCH
 			  $API_DATA 	= array(
 			   'objectID'   => 0,
 			   'performAll' => 'true',
@@ -1533,11 +1583,11 @@
 			  //API DETAILS
 			  $API_KEY  = $customAPIKEY;
 			  $API_ID  	= $customAPIID;
-			  
+
 			  //API RESULT
 			  $API_RESULT 	= op_query($API_URL, 'GET', $API_DATA, $API_ID, $API_KEY);
 			  $getName  	= json_decode($API_RESULT); //GET THE RESULT AND CONVERT TO JSON FORMAT
-			  
+
 			  $API_RESULT 	= null; //REASSIGN VALUE OF API RESULT TO NULL
 			  switch($package_level){
 				  case 'Level 1': $level=1; break;
@@ -1557,21 +1607,21 @@
 			   'city'  					=> $city,
 			   'Town_340'  				=> $town,
 			   'County_456'  			=> $country,
-			   'zip' 					=> $postcode, 
+			   'zip' 					=> $postcode,
 			   'cell_phone' 			=> $mobile_phone, //Set to new value. You can add more fields by adding more here. Not just firstname but all fields except the id.
-			   'home_phone' 			=> $home_phone, 
-			   'company' 				=> $company_name, 
+			   'home_phone' 			=> $home_phone,
+			   'company' 				=> $company_name,
 			   'f1564' 					=> $companyNumber,
 			   'website' 				=> $company_website,
-			   'address2' 				=> $address_line_2, 
-			   'office_phone' 			=> $company_office_phone, 
+			   'address2' 				=> $address_line_2,
+			   'office_phone' 			=> $company_office_phone,
 			   'f1548' 					=> $package,
 			   'f1549' 					=> $level,
 			   'f1556'					=> $company_business_email,
 			   'f1547'					=> $account_balance
-			  );				  
+			  );
 			  //GET PUT RESULT
-			  $API_RESULT 	= op_query( $API_URL, 'PUT', $API_DATA, $API_ID, $API_KEY );				  
+			  $API_RESULT 	= op_query( $API_URL, 'PUT', $API_DATA, $API_ID, $API_KEY );
 			  //IF OBJECT NOT FOUND, DISPLAY ERROR MESSAGE
 			  if( $API_RESULT == "Object not found" ){
 			   echo 'FAILED TO PUT/UPDATE DATA!';
@@ -1618,7 +1668,7 @@
 			exit();
 		}
 		$profileID			= isset( $_POST[ 'profileID' ] ) ? $_POST[ 'profileID' ] : '';
-		$pesonalID			= isset( $_POST[ 'pesonalID' ] ) ? $_POST[ 'pesonalID' ] : '';
+		$pesonalID			= isset( $_POST[ 'personalID' ] ) ? $_POST[ 'personalID' ] : '';
 		$name				= isset( $_POST[ 'name' ] ) ? $_POST[ 'name' ] : '';
 		$emailAddress		= isset( $_POST[ 'emailAddress' ] ) ? $_POST[ 'emailAddress' ] : '';
 		$firstAddress		= isset( $_POST[ 'firstAddress' ] ) ? $_POST[ 'firstAddress' ] : '';
@@ -1635,140 +1685,10 @@
 		if(empty($profileID)){
 			echo 'Client profile not found!';
 		}else{
-			if ( !function_exists('wp_handle_upload') ) {
-			require_once(ABSPATH . 'wp-admin' . "/includes/image.php");
-			require_once(ABSPATH . "wp-admin" . "/includes/file.php");
-			require_once(ABSPATH . "wp-admin" . "/includes/media.php");
-			}
-			// Move file to media library
-			$movefile = wp_handle_upload( $_FILES['thumbnailProfile'], array('test_form' => false) );
-
-			// If move was successful, insert WordPress attachment
-			if ( $movefile && !isset($movefile['error']) ) {
-
-				$wp_upload_dir = wp_upload_dir();
-				$image_upload=$wp_upload_dir['url'] . '/' . basename($movefile['file']);
-				//var_dump($image_upload);
-				if(!empty($image_upload)){
-					try{
-					$sqlProfileup = $WP_CON->prepare('SELECT COUNT(*) AS totalProfile FROM wp_user_imguploads WHERE uid_PartnerID = :parnerID');
-					$sqlProfileup->execute(array(':parnerID' => $profileID));
-					$resultProfile = $sqlProfileup->fetchObject();
-					}catch(PDOException $ERR){
-						echo $ERR->getMessage();
-						exit();
-					}
-					if($resultProfile->totalProfile > 0) {
-						try {
-						$sqlUpdateprofile = "UPDATE wp_user_imguploads   
-										   SET profileURL  = :profileUrl
-										 WHERE uid_PartnerID = :user_id
-									  ";
-						 $statementImage = $WP_CON->prepare($sqlUpdateprofile);
-						 $statementImage	-> bindValue(":profileUrl", $image_upload);
-						 $statementImage	-> bindValue(":user_id", $profileID);
-						 $statementImage	-> execute();
-
-						  //$conn = null;        // Disconnect
-						  //echo 'Updated';
-
-							$current_user = wp_get_current_user();
-							update_option($current_user->ID . "_fb_image_index", 0);
-
-
-						}
-						catch(PDOException $e) {
-						  echo $e->getMessage();
-						}
-					}
-					echo "File is valid, and was successfully uploaded.\n";		
-				}
-				
-			}
-			// $filename should be the path to a file in the upload directory.
-			// Insert the attachment.
-			/*var_dump($_FILES[ "thumbnailProfile" ][ "type" ]);
-			if( isset( $_FILES[ "thumbnailProfile" ][ "type" ] ) ){
-				$validextensions 	= array("jpeg", "jpg", "png");
-				$temporary 			= explode( ".", $_FILES[ "thumbnailProfile" ][ "name" ] );
-				$file_extension 	= end( $temporary );
-				if ( ( ( $_FILES[ "thumbnailProfile" ][ "type" ] == "image/png") || ( $_FILES[ "thumbnailProfile" ][ "type" ] == "image/jpg" ) || ( $_FILES[ "thumbnailProfile" ][ "type" ] == "image/jpeg")
-				) && ( $_FILES[ "thumbnailProfile" ][ "size" ] < 400000)//Approx. 100kb files can be uploaded.
-				&& in_array($file_extension, $validextensions)) {
-					if ($_FILES[ "thumbnailProfile" ][ "error" ] > 0){
-						echo "Return Code: " . $_FILES[ "thumbnailProfile" ][ "error" ] . "<br/><br/>";
-					}else{
-						if (file_exists(get_template_directory_uri( )."/page-template/uploads/".$_FILES[ 'thumbnailProfile' ][ 'name' ])) {
-							echo $_FILES[ "thumbnailProfile" ][ "name" ] . " <span id='invalid'><b>already exists.</b></span> ";
-						}else{
-							$sourcePath = $_FILES[ "thumbnailProfile" ][ "name" ]; // Storing source path of the file in a variable
-							$targetPath = get_template_directory_uri( )."/page-template/uploads/".$_FILES[ 'thumbnailProfile' ][ 'name' ]; // Target path where file is to be stored
-							
-							if ( ! function_exists( 'wp_handle_upload' ) ) {
-								require_once( ABSPATH . 'wp-admin/includes/file.php' );
-							}
-
-							$uploadedfile 	= $_FILES[ "thumbnailProfile" ];
-							
-							
-							$upload_overrides = array( 'test_form' => false, 'unique_filename_callback' => 'my_cust_filename');
-							
-							add_filter('upload_dir', 'upload_location_directory');
-							$movefile 		= wp_handle_upload( $uploadedfile, $upload_overrides );
-							//echo $movefile[ 'file' ] . '<br />';
-							remove_filter('upload_dir', 'upload_location_directory');
-							if ( $movefile && ! isset( $movefile[ 'error' ] ) ) { 
-								try{
-								$sqlProfileup = $WP_CON->prepare('SELECT COUNT(*) AS totalProfile FROM wp_user_imguploads WHERE uid_PartnerID = :parnerID');
-								$sqlProfileup->execute(array(':parnerID' => $profileID));
-								$resultProfile = $sqlProfileup->fetchObject();
-								}catch(PDOException $ERR){
-									echo $ERR->getMessage();
-									exit();
-								}
-								if($resultProfile->totalProfile > 0) {
-									try {
-									$sqlUpdateprofile = "UPDATE wp_user_imguploads   
-													   SET profileURL  = :profileUrl,
-														   uid_PartnerID = :partnerID
-													 WHERE uid_PartnerID = :user_id
-												  ";
-									 $statementImage = $WP_CON->prepare($sqlUpdateprofile);
-									 $statementImage	-> bindValue(":profileUrl", $movefile['url']);
-									 $statementImage	-> bindValue(":partnerID", $profileID);
-									 $statementImage	-> bindValue(":user_id", $profileID);
-									 $statementImage	-> execute();
-
-									  //$conn = null;        // Disconnect
-									  //echo 'Updated';
-									}
-									catch(PDOException $e) {
-									  echo $e->getMessage();
-									}
-								}
-								echo "File is valid, and was successfully uploaded.\n";
-								//var_dump( $movefile['url'] );
-							} else {
-								/**
-								 * Error generated by _wp_handle_upload( )
-								 * @see _wp_handle_upload( ) in wp-admin/includes/file.php
-								 */
-								/*echo $uploadedfile . '<br />';
-								echo $movefile[ 'error' ];
-							}
-							
-						}
-					}
-				}
-				else{
-					//echo "<span id='invalid'>***Invalid file Size or Type***<span>";
-				}
-			}*/
-			
 			$customAPIKEY   = get_field('custom_api_key','option');// name of the admin
 		    $customAPIID  	= get_field('custom_api_id','option');// Email Title for the admin
 			$API_URL 		= 'http://api.ontraport.com/1/objects?'; //URL OF THE ONTRAPORT
-			  //DATA TO FETCH				  
+			  //DATA TO FETCH
 			  $API_DATA 	= array(
 			   'objectID'   => 0,
 			   'performAll' => 'true',
@@ -1779,11 +1699,11 @@
 			  //API DETAILS
 			  $API_KEY  = $customAPIKEY;
 			  $API_ID  	= $customAPIID;
-			  
+
 			  //API RESULT
 			  $API_RESULT 	= op_query($API_URL, 'GET', $API_DATA, $API_ID, $API_KEY);
 			  $getName  	= json_decode($API_RESULT); //GET THE RESULT AND CONVERT TO JSON FORMAT
-			  
+
 			  $API_RESULT 	= null; //REASSIGN VALUE OF API RESULT TO NULL
 			  //API DATA TO PUT/UPDATE. NOTE: ObjectID must be 0 [0 = Contacts]; and id must be set and must be already registered in OntraPort, otherwise the result is fail.
 			  $API_DATA 		= array(
@@ -1796,10 +1716,10 @@
 			   'city'  					=> $city,
 			   'Town_340'  				=> $town,
 			   'County_456'  			=> $county,
-			   'zip' 					=> $postcode, 
+			   'zip' 					=> $postcode,
 			   'cell_phone' 			=> $mobilePhone, //Set to new value. You can add more fields by adding more here. Not just firstname but all fields except the id.
-			   'home_phone' 			=> $homePhone 
-			  );			  
+			   'home_phone' 			=> $homePhone
+			  );
 			  //GET PUT RESULT
 			  $API_RESULT 	= op_query( $API_URL, 'PUT', $API_DATA, $API_ID, $API_KEY );
 			  //IF OBJECT NOT FOUND, DISPLAY ERROR MESSAGE
@@ -1814,7 +1734,7 @@
 				'post_type' => 'client',
 				);
 				// Update the post into the database
-				$perID 		= wp_update_post( $personalPost ); 
+				$perID 		= wp_update_post( $personalPost );
 				update_post_meta( $perID, 'full_name', $name );
 				update_post_meta( $perID, 'address_line_1', $firstAddress );
 				update_post_meta( $perID, 'address_line_2', $secondAddress );
@@ -1830,7 +1750,7 @@
 				update_post_meta( $perID, 'company_city', $city );
 				update_post_meta( $perID, 'company_postcode', $postcode );
 				update_post_meta( $perID, 'company_business_email', $emailAddress);
-				update_post_meta( $perID, 'company_name', $companyName); 
+				update_post_meta( $perID, 'company_name', $companyName);
 				update_post_meta( $perID, 'company_office_phone', $homePhone );
 				update_post_meta( $perID, 'company_mobile_phone', $mobilePhone);
 				$sql = $WP_CON->prepare('SELECT COUNT(*) AS total FROM wp_user_profiles_mirror WHERE partner_id = :partnerID');
@@ -1838,12 +1758,12 @@
 				$result = $sql->fetchObject();
 				if($result->total > 0) {
 					try {
-						$sql = "UPDATE wp_user_profiles_mirror   
-						   SET full_name = :fullName,  
-							   home_phone = :homePhone,  
-							   mobile_phone = :mobilePhone,  
-							   postcode = :postCode,  
-							   company_postcode = :companypostCode  
+						$sql = "UPDATE wp_user_profiles_mirror
+						   SET full_name = :fullName,
+							   home_phone = :homePhone,
+							   mobile_phone = :mobilePhone,
+							   postcode = :postCode,
+							   company_postcode = :companypostCode
 						 WHERE partner_id = :user_id
 						";
 
@@ -1924,13 +1844,13 @@
 					<img width="50" height="auto"  src="<?php echo $post_thumbnail_image; ?>" alt="<?php the_title(); ?>" />
 					<?php
 					echo '</a>';
-				} else{ 
+				} else{
 					echo '<a href="' . get_edit_post_link() . '">';
-					?>	
+					?>
 					<img width="50" height="auto"  src="<?php bloginfo('template_directory'); ?>/images/default-logo.jpg" alt="<?php the_title(); ?>" />
 					<?php
 					echo '</a>';
-				} 
+				}
 			break;
 			case 'partner_id' :
 
@@ -1987,7 +1907,7 @@
 		add_filter( 'manage_logo_pages_columns' , 'wpcs_add_thumbnail_columns' );
 		add_action( 'manage_logo_pages_custom_column' , 'wpcs_add_thumbnail_columns_data', 10, 2 );
 	}
-	//Shortcode 
+	//Shortcode
 	function account_balance( ){
 		ob_start( );
 		global $FULLNAME;
@@ -2005,11 +1925,11 @@
 		  'Api-Appid:'.$customAPIID,
 		  'Api-Key:'.$customAPIKEY
 		));
-		$response = curl_exec( $session ); 
+		$response = curl_exec( $session );
 		curl_close( $session );
 		//header("Content-Type: text");
 		//echo "CODE: " . $response;
-		$getName 		= json_decode( $response ); 
+		$getName 		= json_decode( $response );
 		//php functionalities here
 		$acountValue=$getName->data[0]->f1547;
 		if(is_user_logged_in()){
@@ -2044,11 +1964,11 @@
 		  'Api-Appid:'.$customAPIID,
 		  'Api-Key:'.$customAPIKEY
 		));
-		$response = curl_exec( $session ); 
+		$response = curl_exec( $session );
 		curl_close( $session );
 		//header("Content-Type: text");
 		//echo "CODE: " . $response;
-		$getName 		= json_decode( $response ); 
+		$getName 		= json_decode( $response );
 		//php functionalities here
 		$packagelower=$getName->data[0]->f1548;
 		if(is_user_logged_in()){
@@ -2063,7 +1983,7 @@
 			}
 		}
 		else{
-			
+
 		}
 		return ob_get_clean( );
 	}
@@ -2085,11 +2005,11 @@
 		  'Api-Appid:'.$customAPIID,
 		  'Api-Key:'.$customAPIKEY
 		));
-		$response = curl_exec( $session ); 
+		$response = curl_exec( $session );
 		curl_close( $session );
 		//header("Content-Type: text");
 		//echo "CODE: " . $response;
-		$getName 		= json_decode( $response ); 
+		$getName 		= json_decode( $response );
 		//php functionalities here
 		$packagelower=$getName->data[0]->f1548;
 		if(is_user_logged_in()){
@@ -2104,7 +2024,7 @@
 			}
 		}
 		else{
-			
+
 		}
 		return ob_get_clean( );
 	}
@@ -2137,11 +2057,11 @@
 		  'Api-Appid:'.$customAPIID,
 		  'Api-Key:'.$customAPIKEY
 		));
-		$response = curl_exec( $session ); 
+		$response = curl_exec( $session );
 		curl_close( $session );
 		//header("Content-Type: text");
 		//echo "CODE: " . $response;
-		$getName 		= json_decode( $response ); 
+		$getName 		= json_decode( $response );
 		//php functionalities here
 		$creditID	=$getName->data[0]->id;
 		$stripAmount=$getName->data[0]->f1547;
@@ -2159,16 +2079,16 @@
 			  $charge = \Stripe\Charge::create(array(
 				  'customer' => $customer->id,
 				  'amount'   => $amountStripe.'00',
-				  'metadata' => array("order_id" => "6735"),	
-				  'currency' => 'GBP' 
-			  )); 
-			$charge->source->brand;	
-			$charge->source->funding;	
-			$charge->source->last4;	
-			$charge->source->exp_month;	
-			$charge->source->exp_year;	
+				  'metadata' => array("order_id" => "6735"),
+				  'currency' => 'GBP'
+			  ));
+			$charge->source->brand;
+			$charge->source->funding;
+			$charge->source->last4;
+			$charge->source->exp_month;
+			$charge->source->exp_year;
 			$API_URL 		= 'http://api.ontraport.com/1/objects?'; //URL OF THE ONTRAPORT
-			//DATA TO FETCH				  
+			//DATA TO FETCH
 			$API_DATA 	= array(
 				'objectID'   => 0,
 				'performAll' => 'true',
@@ -2202,8 +2122,8 @@
 			'ccExpirationMonth'  	=> $charge->source->exp_month,
 			'ccExpirationYear'  	=> $charge->source->exp_year,
 			'f1547'  				=> '£'.$totalStripe,
-			'ccNumber' 				=> $charge->source->last4 
-			);			  
+			'ccNumber' 				=> $charge->source->last4
+			);
 			//GET PUT RESULT
 			$API_RESULT 	= op_query( $API_URL, 'PUT', $API_DATA, $API_ID, $API_KEY );
 			//IF OBJECT NOT FOUND, DISPLAY ERROR MESSAGE
@@ -2217,8 +2137,8 @@
 	}
 	add_action( 'wp_ajax_creditCard', 'creditCard' );
 	add_action( 'wp_ajax_nopriv_creditCard', 'creditCard' );
-	function automaticTop(){ 
-		$host  		= "db639369002.db.1and1.com"; 
+	function automaticTop(){
+		$host  		= "db639369002.db.1and1.com";
 		$database   = "db639369002";
 		$user  		= "dbo639369002";
 		$password   = "1qazxsw2!QAZXSW@";
@@ -2257,11 +2177,11 @@
 		  'Api-Appid:'.$customAPIID,
 		  'Api-Key:'.$customAPIKEY
 		));
-		$response = curl_exec( $session ); 
+		$response = curl_exec( $session );
 		curl_close( $session );
 		//header("Content-Type: text");
 		//echo "CODE: " . $response;
-		$getName 		= json_decode( $response ); 
+		$getName 		= json_decode( $response );
 		//php functionalities here
 		$autocreditID	= $getName->data[0]->id;
 		$autostripAmount = $getName->data[0]->f1547;
@@ -2280,11 +2200,11 @@
 				$chargeAuto = \Stripe\Charge::create(array(
 				  'customer' => $customerAuto->id,
 				  'amount'   => $autotopupAmount.'00',
-				  'currency' => 'GBP' 
-				)); 
-				//var_dump($chargeAuto->source->name); 
+				  'currency' => 'GBP'
+				));
+				//var_dump($chargeAuto->source->name);
 				$API_URL 		= 'http://api.ontraport.com/1/objects?'; //URL OF THE ONTRAPORT
-				//DATA TO FETCH				  
+				//DATA TO FETCH
 				$API_DATA 	= array(
 					'objectID'   => 0,
 					'performAll' => 'true',
@@ -2318,8 +2238,8 @@
 				'ccExpirationMonth'  	=> $chargeAuto->source->exp_month,
 				'ccExpirationYear'  	=> $chargeAuto->source->exp_year,
 				'f1547'  				=> '£'.$autototalStripe,
-				'ccNumber' 				=> $chargeAuto->source->last4 
-				);			  
+				'ccNumber' 				=> $chargeAuto->source->last4
+				);
 				//GET PUT RESULT
 				$API_RESULT 	= op_query( $API_URL, 'PUT', $API_DATA, $API_ID, $API_KEY );
 				//IF OBJECT NOT FOUND, DISPLAY ERROR MESSAGE
@@ -2336,7 +2256,7 @@
 					$emailStripe	= $current_user->user_email;
 					$nameStripe		= $chargeAuto->source->name;
 					$monthStripe	= $chargeAuto->source->exp_month;
-				 	$yearStripe		= $chargeAuto->source->exp_year; 
+				 	$yearStripe		= $chargeAuto->source->exp_year;
 					try {
 						$sql = "INSERT INTO wp_creditcard(credit_emailaddress,
 									credit_partnerid,
@@ -2345,30 +2265,30 @@
 									credit_topup,
 									credit_exmonth,
 									credit_exyear) VALUES (
-									:cEmail, 
-									:cpartnerID, 
-									:cName, 
-									:cMin, 
+									:cEmail,
+									:cpartnerID,
+									:cName,
+									:cMin,
 									:cPop,
 									:cExmonth,
 									:cExyear)";
-																 
-						$stmt = $WP_CON->prepare($sql);			 
-						$stmt->bindParam(':cEmail', $emailStripe, PDO::PARAM_STR);		
-						$stmt->bindParam(':cpartnerID', $autocreditID, PDO::PARAM_STR);		
-						$stmt->bindParam(':cName', $nameStripe, PDO::PARAM_STR);		
-						$stmt->bindParam(':cMin', $minAmounts, PDO::PARAM_STR);	
+
+						$stmt = $WP_CON->prepare($sql);
+						$stmt->bindParam(':cEmail', $emailStripe, PDO::PARAM_STR);
+						$stmt->bindParam(':cpartnerID', $autocreditID, PDO::PARAM_STR);
+						$stmt->bindParam(':cName', $nameStripe, PDO::PARAM_STR);
+						$stmt->bindParam(':cMin', $minAmounts, PDO::PARAM_STR);
 						$stmt->bindParam(':cPop', $autotopupAmount, PDO::PARAM_STR);
 						$stmt->bindParam(':cExmonth', $monthStripe, PDO::PARAM_STR);
 						$stmt->bindParam(':cExyear', $yearStripe, PDO::PARAM_STR);
-						// use PARAM_STR although a number										 
+						// use PARAM_STR although a number
 						$stmt->execute();
 						}catch(PDOException $err){
 						echo "Error: " . $err->getMessage();
 						}
 					//$WP_CON = null;
 					//echo 'Succesfully top up!';
-				}	
+				}
 				echo 'Succesfully top up!';
 			}
 		}
@@ -2393,34 +2313,34 @@
 		  'Api-Appid:'.$customAPIID,
 		  'Api-Key:'.$customAPIKEY
 		));
-		$response = curl_exec( $session ); 
+		$response = curl_exec( $session );
 		curl_close( $session );
 		//header("Content-Type: text");
 		//echo "CODE: " . $response;
-		$getName 		= json_decode( $response ); 
+		$getName 		= json_decode( $response );
 		//php functionalities here
 		switch($getName->data[0]->f1549){
-			 case 1: {  
-					echo 'class="reward-package-level-one"'; 
-					break; 
+			 case 1: {
+					echo 'class="reward-package-level-one"';
+					break;
 				}
-			 case 2: { 
+			 case 2: {
 					echo 'class="reward-package-level-two"';
 					break;
 				}
-			 case 3: { 
+			 case 3: {
 					echo 'class="reward-package-level-three"';
 					break;
 				}
-			 case 4: { 
+			 case 4: {
 					echo 'class="reward-package-level-four"';
 					break;
 				}
-			 case 5: { 
-					echo 'class="reward-package-level-five"'; 
+			 case 5: {
+					echo 'class="reward-package-level-five"';
 					break;
 				}
-			 default:{ 
+			 default:{
 				break;
 			 }
 		}
@@ -2435,7 +2355,7 @@
 	add_action( 'wp_ajax_setcreditCard', 'setcreditCard' );
 	add_action( 'wp_ajax_nopriv_setcreditCard', 'setcreditCard' );
 	function changeCard(){
-		$host  		= "db651120122.db.1and1.com"; 
+		$host  		= "db651120122.db.1and1.com";
 		$database   = "db651120122";
 		$user  		= "dbo651120122";
 		$password   = "1qazxsw2!QAZXSW@";
@@ -2486,32 +2406,32 @@
 							setting_expmonth,
 							setting_expyear,
 							setting_primarycard) VALUES (
-							:sCardtype, 
-							:sCardname, 
-							:sCardnumber, 
-							:sCvv, 
-							:sPartnerid, 
-							:sExpmonth, 
+							:sCardtype,
+							:sCardname,
+							:sCardnumber,
+							:sCvv,
+							:sPartnerid,
+							:sExpmonth,
 							:sExpyear,
 							:sPrimary)";
-														 
-				$stmt = $WP_CON->prepare($sql);			 
-				$stmt->bindParam(':sCardtype', $customerSet->brand, PDO::PARAM_STR);		
-				$stmt->bindParam(':sCardname', $setcardName, PDO::PARAM_STR);		
-				$stmt->bindParam(':sCardnumber', $setcardNumber, PDO::PARAM_STR);				
-				$stmt->bindParam(':sCvv', $setcardCvc, PDO::PARAM_STR);				
-				$stmt->bindParam(':sPartnerid', $setPartner, PDO::PARAM_STR);	
+
+				$stmt = $WP_CON->prepare($sql);
+				$stmt->bindParam(':sCardtype', $customerSet->brand, PDO::PARAM_STR);
+				$stmt->bindParam(':sCardname', $setcardName, PDO::PARAM_STR);
+				$stmt->bindParam(':sCardnumber', $setcardNumber, PDO::PARAM_STR);
+				$stmt->bindParam(':sCvv', $setcardCvc, PDO::PARAM_STR);
+				$stmt->bindParam(':sPartnerid', $setPartner, PDO::PARAM_STR);
 				$stmt->bindParam(':sExpmonth', $customerSet->exp_month, PDO::PARAM_STR);
 				$stmt->bindParam(':sExpyear', $customerSet->exp_year, PDO::PARAM_STR);
 				$stmt->bindParam(':sPrimary', $setPrimary, PDO::PARAM_STR);
-				// use PARAM_STR although a number										 
+				// use PARAM_STR although a number
 				$stmt->execute();
 				}catch(PDOException $err){
 				echo "Error: " . $err->getMessage();
 				}
 			//$WP_CON = null;
 			//echo 'Succesfully top up!';
-		}	
+		}
 		echo 'Succesfully top save!';
 		die();
 	}
@@ -2534,12 +2454,12 @@ function directCARDPAYMENT(){
 		'Authorization: Bearer Umbrella_Test',
 		'GoCardless-Version: 2015-07-06'
 	));
-	$response = curl_exec( $session ); 
+	$response = curl_exec( $session );
 	curl_close( $session );
 	//header("Content-Type: text");
 	//echo "CODE: " . $response;
 	$getName 		= json_decode( $response );
-	$directToken = 'sandbox_N0CPkkFPndE1s_-JAVzzDhgo_ekl3AWVgfldd5ja'; 
+	$directToken = 'sandbox_N0CPkkFPndE1s_-JAVzzDhgo_ekl3AWVgfldd5ja';
 	$client = new \GoCardlessPro\Client(array(
 	  'access_token' => 'AC00001F02S4003E4G81A05PK6ZAK0T6',
 	  'environment'  => \GoCardlessPro\Environment::SANDBOX
@@ -2574,20 +2494,20 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 /*function lockShortcode() {
 	ob_start();
 	require_once( get_stylesheet_directory() . '/facebook/src/Facebook/autoload.php' );
-	
+
 	global $getID, $helper, $successLogin;
-	
+
 	$successLogin = false;
-	
+
 	$fb = new Facebook\Facebook([
 	  'app_id' => '1809109289321551', // Replace {app-id} with your app id
 	  'app_secret' => 'c708e1816369948058edebc76df52d9d',
 	  'default_graph_version' => 'v2.7',
 	]);
 	$helper = $fb->getRedirectLoginHelper();
-	
-	
-	
+
+
+
 	if(isset($_GET['code'])){
 		try {
 		  $accessToken = $helper->getAccessToken();
@@ -2615,7 +2535,7 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 		  }
 		  //exit;
 		}
-		
+
 		if(isset($accessToken)){
 			// Logged in
 			//echo '<h3>Access Token</h3>';
@@ -2648,7 +2568,7 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 			}
 
 			$_SESSION['fb_access_token'] = (string) $accessToken;
-			
+
 			try {
 			  // Returns a `Facebook\FacebookResponse` object
 				$response = $fb->get('/me?fields=id,name,email,first_name,last_name, gender, birthday,picture',$_SESSION['fb_access_token']);
@@ -2659,17 +2579,17 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 			  echo 'Facebook SDK returned an error: ' . $e->getMessage();
 			  exit;
 			}
-			
+
 			$user 		= $response->getGraphUser();
 			$fbEmail	= $user['email'];
 			//var_dump($fbEmail);
 			if(!empty($fbEmail)){
-				
+
 				$host  		= "db640728737.db.1and1.com";
 				$database   = "db640728737";
 				$user  		= "dbo640728737";
 				$password   = "1qazxsw2!QAZXSW@";
-				
+
 				try{
 					$WP_CON	= new PDO('mysql:host='.$host.';dbname='.$database.';', $user, $password);
 					$WP_CON->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -2677,7 +2597,7 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 					echo $ERR->getMessage();
 					exit();
 				}
-				
+
 				try{
 					$customAPIKEY  	= get_field('custom_api_key','option');// name of the admin
 					$customAPIID  	= get_field('custom_api_id','option');// Email Title for the admin
@@ -2685,7 +2605,7 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 					//$postargs 		= "https://api.ontraport.com/1/objects?objectID=0&performAll=true&sortDir=asc&condition=email%3D'testing@umbrellasupport.co.uk'&searchNotes=true";
 					$request		= "";
 					$session 		= curl_init();
-					
+
 					curl_setopt ( $session, CURLOPT_RETURNTRANSFER, true );
 					curl_setopt ( $session, CURLOPT_URL, $postargs );
 					//curl_setopt ($session, CURLOPT_HEADER, true);
@@ -2693,11 +2613,11 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 					  'Api-Appid:'.$customAPIID,
 					  'Api-Key:'.$customAPIKEY
 					));
-					$response = curl_exec( $session ); 
+					$response = curl_exec( $session );
 					curl_close( $session );
 					//header("Content-Type: text");
 					//echo "CODE: " . $response;
-					$getName 		= json_decode( $response ); 
+					$getName 		= json_decode( $response );
 					$sendEmail 		= $fbEmail;
 					$fbID  	 		= $getName->data[0]->id;
 					$fbName 	 	= $getName->data[0]->firstname.' '.$getName->data[0]->lastname;
@@ -2726,31 +2646,31 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 					$fbAmountSend	= $str = substr($fbAmount,1);
 					$fbManager 		= $fbName;
 					$fbAgentID    = $getName->data[0]->CallAgent_462;
-					
+
 				}catch(Exception $E){
 					echo 'Error: ' . $E->getMessage();
 					exit();
 				}
-				
-				
+
+
 				if(!empty($fbpackage)){
 					$fbpackageData=$fbpackage;
 				}else{
 					$fbpackageData="Standard";
 				}
-				
-				$arg= array( 
+
+				$arg= array(
 					'post_type'  	 	=> 'client',
 					'meta_query'   		=> array(
 						array(
-							'key'       => 'partner_id',					
+							'key'       => 'partner_id',
 							//'value'     => '77514',
 							'value'     => $fbID,
 							'compare'   => 'IN',
 						)
 					)
 				);
-				
+
 				$the_query = new WP_Query($arg);
 				if ( $the_query->have_posts() ) {
 					while ( $the_query->have_posts() ) { $the_query->the_post();
@@ -2770,7 +2690,7 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 					case 816: $fbAgent="Sabrina Ali"; break;
 					default: $fbAgent="";break;
 				}
-				
+
 				if(empty($fbID)){
 					//header("Refresh: 0; url=".home_url());
 					//echo '<meta http-equiv="refresh" content="0.1;'.home_url().'">';
@@ -2784,7 +2704,7 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 					}catch(PDOException $E){
 						echo 'Error: ' . $E->getMessage();
 					}
-					
+
 					if(email_exists($sendEmail)){
 						global  $user_id;
 						$login = $sendEmail;
@@ -2796,20 +2716,20 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 							 // var_dump($login);
 							}
 						}
-						
+
 						if($result->total > 0) {
 							//$status=0;
 						   // echo 'Hello';
 							try {
-							$sql = "UPDATE wp_user_profiles_mirror   
-									   SET full_name  = :fullName,  
-										   home_phone = :homePhone, 
-										   mobile_phone = :mobilePhone, 
-										   postcode = :postCode, 
-										   company_name = :companyName 
+							$sql = "UPDATE wp_user_profiles_mirror
+									   SET full_name  = :fullName,
+										   home_phone = :homePhone,
+										   mobile_phone = :mobilePhone,
+										   postcode = :postCode,
+										   company_name = :companyName
 									 WHERE partner_id = :user_id
 								  ";
-									
+
 							 $statement = $WP_CON->prepare($sql);
 							 $statement->bindValue(":user_id", $fbID);
 							 $statement->bindValue(":fullName", $fbName);
@@ -2837,7 +2757,7 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 							exit();
 						}
 						if($resultImage->totalImage >0) {
-						
+
 						}else{
 							$statusImage=0;
 							$urlMerror=get_home_url();
@@ -2848,19 +2768,19 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 											ui_URL,
 											uid_PartnerID,
 											ui_DATEUPLOAD) VALUES (
-											:uiHOST, 
-											:uiPATH, 
-											:uiURL, 
+											:uiHOST,
+											:uiPATH,
+											:uiURL,
 											:uidPartnerID,
 											:uiDATEUPLOAD)";
-																		 
-								$stmt = $WP_CON->prepare($sql);			 
-								$stmt->bindParam(':uiHOST', $urlMerror, PDO::PARAM_STR);		
-								$stmt->bindParam(':uiPATH', $urlMerror, PDO::PARAM_STR);		
-								$stmt->bindParam(':uiURL', $urlImage, PDO::PARAM_STR);	
+
+								$stmt = $WP_CON->prepare($sql);
+								$stmt->bindParam(':uiHOST', $urlMerror, PDO::PARAM_STR);
+								$stmt->bindParam(':uiPATH', $urlMerror, PDO::PARAM_STR);
+								$stmt->bindParam(':uiURL', $urlImage, PDO::PARAM_STR);
 								$stmt->bindParam(':uidPartnerID', $fbID, PDO::PARAM_STR);
 								$stmt->bindParam(':uiDATEUPLOAD', date ("Y-m-d H:i:s"), PDO::PARAM_STR);
-								// use PARAM_STR although a number										 
+								// use PARAM_STR although a number
 								$stmt->execute();
 								}catch(PDOException $err){
 								echo "Error: " . $err->getMessage();
@@ -2885,18 +2805,18 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 											user_type,
 											customer_id,
 											allow_remarketing) VALUES (
-											:userEmail,  
-											:userType, 
-											:userID, 
-											:userAllow)";							 
-								$stmtUser = $WP_CON->prepare($saveUser);			 
-								$stmtUser->bindParam(':userEmail', $fbEmail, PDO::PARAM_STR);		
-								//$stmtUser->bindParam(':userPassword', md5($password), PDO::PARAM_STR);		
-								$stmtUser->bindParam(':userType', $merchant, PDO::PARAM_STR);	
+											:userEmail,
+											:userType,
+											:userID,
+											:userAllow)";
+								$stmtUser = $WP_CON->prepare($saveUser);
+								$stmtUser->bindParam(':userEmail', $fbEmail, PDO::PARAM_STR);
+								//$stmtUser->bindParam(':userPassword', md5($password), PDO::PARAM_STR);
+								$stmtUser->bindParam(':userType', $merchant, PDO::PARAM_STR);
 								$stmtUser->bindParam(':userID', $fbID, PDO::PARAM_STR);
 								$stmtUser->bindParam(':userAllow', $userAllow, PDO::PARAM_STR);
-								// use PARAM_STR although a number										 
-								$stmtUser->execute();			
+								// use PARAM_STR although a number
+								$stmtUser->execute();
 							}catch(PDOException $err){
 								echo "Error: " . $err->getMessage();
 							}
@@ -2916,11 +2836,11 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 						$update_post = array(
 							'ID'    		=> $getID,
 							'post_title'    => $fbName,
-							'post_status'   => 'publish',          
-							'post_type'     => 'client' 
+							'post_status'   => 'publish',
+							'post_type'     => 'client'
 						);
 						$postId = wp_update_post($update_post);
-						
+
 						switch($fbLevel){
 						  case 1		: $level='Level 1'; break;
 						  case 2		: $level='Level 2'; break;
@@ -2929,7 +2849,7 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 						  case 5		: $level='Level 5'; break;
 						  default		: $level='Level 1'; break;
 						}
-						
+
 						update_post_meta( $postId, 'full_name', $fbName);
 						update_post_meta( $postId, 'address_line_1', $fbAddress);
 						update_post_meta( $postId, 'address_line_2', $fbAddress2);
@@ -2937,11 +2857,11 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 						update_post_meta( $postId, 'city', $fbCity);
 						update_post_meta( $postId, 'postcode', $fbZip);
 						update_post_meta( $postId, 'home_phone', $fbHphone);
-						update_post_meta( $postId, 'mobile_phone', $fbCphone );										
+						update_post_meta( $postId, 'mobile_phone', $fbCphone );
 						update_post_meta( $postId, 'company_city', $fbCity );
 						update_post_meta( $postId, 'country', $fbcountry );
 						update_post_meta( $postId, 'company_address_line_1', $fbAddress);
-						update_post_meta( $postId, 'company_address_line_2', $fbAddress2);										
+						update_post_meta( $postId, 'company_address_line_2', $fbAddress2);
 						update_post_meta( $postId, 'company_postcode', $fbZip);
 						update_post_meta( $postId, 'company_name', $fbCompany);
 						update_post_meta( $postId, 'company_number', $fbCompanynum);
@@ -2961,14 +2881,14 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 						wp_set_auth_cookie( $update_id, false, is_ssl() );
 						$successLogin = true;
 						//echo '<p>!</p>';
-						
+
 						//header("Refresh: 0; url=".home_url());
 						echo '<meta http-equiv="refresh" content="0.1;'.home_url().'">';
 
 					}else{
 						$new_post = array(
 							'post_title'    => $fbName,
-							'post_status'   => 'publish',          
+							'post_status'   => 'publish',
 							'post_type'     => 'client'
 						);
 						//insert the the post into database by passing $new_post to wp_insert_post
@@ -2986,15 +2906,15 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 							//$status=0;
 						   // echo 'Hello';
 							try {
-							$sql = "UPDATE wp_user_profiles_mirror   
-									   SET full_name  = :fullName,  
-										   home_phone = :homePhone, 
-										   mobile_phone = :mobilePhone, 
-										   postcode = :postCode, 
-										   company_name = :companyName 
+							$sql = "UPDATE wp_user_profiles_mirror
+									   SET full_name  = :fullName,
+										   home_phone = :homePhone,
+										   mobile_phone = :mobilePhone,
+										   postcode = :postCode,
+										   company_name = :companyName
 									 WHERE partner_id = :user_id
 								  ";
-									
+
 							 $statement = $WP_CON->prepare($sql);
 							 $statement->bindValue(":user_id", $fbID);
 							 $statement->bindValue(":fullName", $fbName);
@@ -3107,8 +3027,8 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 						add_post_meta( $pid, 'company_address_line_2', $fbAddress2, true);
 						add_post_meta( $pid, 'company_city', $fbCity, true );
 						add_post_meta( $pid, 'company_office_phone', $fbHphone, true );
-						add_post_meta( $pid, 'company_mobile_phone', $fbCphone, true );									
-						add_post_meta( $pid, 'company_business_email', $fbBemail, true );										
+						add_post_meta( $pid, 'company_mobile_phone', $fbCphone, true );
+						add_post_meta( $pid, 'company_business_email', $fbBemail, true );
 						add_post_meta( $pid, 'company_office_phone', $fbOphone, true );
 						add_post_meta( $pid, 'account_manager', $fbAgent, true );
 						add_post_meta( $pid, 'partner_id', $fbID, true );
@@ -3131,7 +3051,7 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 						// set the WP login cookie
 						wp_set_auth_cookie( $user_id, false, is_ssl() );
 						$successLogin = true;
-						
+
 						//header("Refresh: 0; url=".home_url());
 						echo '<meta http-equiv="refresh" content="0.1;'.home_url().'">';
 					}
@@ -3148,8 +3068,8 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
     ?>
 			<script type="text/javascript">
 				jQuery(document).ready(function($){
-				   $('#page-content').empty().hide();		
-				   $('center h1').empty().hide();		
+				   $('#page-content').empty().hide();
+				   $('center h1').empty().hide();
 				});
 			</script>
 			<div class="locker">
@@ -3208,7 +3128,7 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 										}
 										return false;
 									});
-								 });	
+								 });
 								</script>
 							<div class="e3ve-modal-divider">OR</div>
 							<div class="modal-body-right">
@@ -3222,7 +3142,7 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 										echo '<div class="facebook-message-success">';
 										echo '<div style="position:relative;">';
 										echo '<div style="text-align:left" class="facebook-message-right">';
-										echo '<img src="'.get_template_directory_uri().'/images/Loading-Circle-Large-Red.gif">';	
+										echo '<img src="'.get_template_directory_uri().'/images/Loading-Circle-Large-Red.gif">';
 										echo '</div>';
 										echo '<div class="facebook-message-left">';
 										echo '<h2><img alt="umbrella support centre" src="'.get_template_directory_uri().'/images/Umbrella-logo.png"></h2>';
@@ -3242,10 +3162,10 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 									}
 								?>
 							</div>
-						</div> 
+						</div>
 						<div style="" class="tabcontent" id="SignUp">
 							<div class="e3ve-modal-container">
-								<script type="text/javascript" src="//forms.ontraport.com/v2.4/include/formEditor/genbootstrap.php?method=script&uid=p2c7818f328&version=1"></script> 
+								<script type="text/javascript" src="//forms.ontraport.com/v2.4/include/formEditor/genbootstrap.php?method=script&uid=p2c7818f328&version=1"></script>
 							</div>
 						</div>
 					</div>
@@ -3276,7 +3196,7 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 				   }
 				});
 			});
-			
+
 			jQuery( document ).ready( function() {
 				setTimeout(function(){
 				$('.modal').delay(500).addClass('loaded');
@@ -3322,12 +3242,12 @@ add_shortcode('e3veHiddenPage','e3ve_hidden_page');
 		</script>
 	<?php
 		}else{
-			
+
 		}
 	}else{
 	?>
 
-	<?php	
+	<?php
 	}
 	return ob_get_clean();
 }
@@ -3335,27 +3255,505 @@ add_shortcode('lock_shortcode','lockShortcode');*/
 function lockShortcode() {
 	ob_start();
 	if(!is_user_logged_in()){
-		if(!is_front_page()){
+		if(!is_front_page()&&!is_page('mobile')&&!is_page('login-error')){
     ?>
 			<script type="text/javascript">
 				jQuery(document).ready(function($){
-				   $('#page-content').empty().hide();		
-				   $('center h1').empty().hide();		
+				   $('#page-content').empty().hide();
+				   $('center h1').empty().hide();
 				});
 			</script>
 			<div class="locker">
-				<div class="e3ve-hidden-page" style="color:#000;background: rgba(248, 248, 248, 0.9) none repeat scroll 0 0; height: 100%; left: 0;     position: absolute; top: 0; width: 100%;"><div class="e3ve-hidden-watermark" style="text-align:center; font-size:50px; text-transform:uppercase; position:relative; top:11%"><img src="http://testing.umbrellasupport.co.uk/wp-content/uploads/2016/10/podlock-red.png" width="30%" height="auto" alt=""><div><a id="e3ve-lock-page-popup" href="<?php echo home_url();?>">Login</a> to Unlock Page</div></div></div>
+				<div class="e3ve-hidden-page" style="color:#000;background: rgba(248, 248, 248, 0.9) none repeat scroll 0 0; height: 100%; left: 0;     position: absolute; top: 0; width: 100%;">
+					<div class="e3ve-hidden-watermark" style="text-align: center; font-size: 45px; text-transform: uppercase; position: relative; top: 115px;">
+						<img src="https://testing.umbrellasupport.co.uk/wp-content/uploads/2016/10/podlock-red.png" width="20%" height="auto" alt="">
+						<div>
+							<a id="e3ve-lock-page-popup" href="<?php echo home_url();?>">Login</a> to Unlock Page
+						</div>
+					</div>
+				</div>
 			</div>
 	<?php
 		}else{
-			
-		}
-	}else{
-	?>
 
-	<?php	
+		}
 	}
 	return ob_get_clean();
 }
 add_shortcode('lock_shortcode','lockShortcode');
+
+function personalProfileImage( ){
+
+	global $wpdb; // this is how you get access to the database
+	$host  		= "db640728737.db.1and1.com";
+	$database   = "db640728737";
+	$user  		= "dbo640728737";
+	$password   = "1qazxsw2!QAZXSW@";
+	try{
+		$WP_CON	= new PDO('mysql:host='.$host.';dbname='.$database.';', $user, $password);
+		$WP_CON->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	}catch(PDOException $ERR){
+		echo $ERR->getMessage();
+		exit();
+	}
+	try{
+		$QUESTRING_GETNAIMG = "SELECT * FROM wp_user_imguploads";
+		$GETNAIMG_RESULT	= $WP_CON->query($QUESTRING_GETNAIMG);
+		$GETNAIMG_LISTS		= $GETNAIMG_RESULT->fetch();
+	}catch(PDOException $ERR){
+		echo $ERR->getMessage();
+		exit();
+	}
+	$file = "";
+	$file = "";
+	$profileImageID=$_POST['profileImageID'];
+	//echo "<pre>";
+	//    print_r($_FILES);
+	//echo "<pre>";
+	if(isset($_FILES['thumbnailProfile']['name'])){
+		$count_image = count($_FILES["thumbnailProfile"]["name"]);
+		for($i = 0; $i < $count_image; $i++ ){
+
+			$file_name = $_FILES['thumbnailProfile']['name'][$i];
+			$file_type = $_FILES['thumbnailProfile']['type'][$i];
+			$file_size = $_FILES['thumbnailProfile']['size'][$i];
+			$file_tmp_name = $_FILES['thumbnailProfile']['tmp_name'][$i];
+			$target_dirs = get_template_directory()."/page-template/uploads/";
+			// echo "this is text". $_POST['text-area'];
+			if($file_name){
+				move_uploaded_file($file_tmp_name, $target_dirs . "$file_name");
+				$folder = $target_dirs;
+				if(is_dir($folder)){
+					if($handle = opendir($folder)){
+						// while(($file=readdir($handle)) != false){
+						// 	if($file==='.' || $file ==='..')continue;
+						// }$file_name
+
+						$image_upload= get_bloginfo ( 'template_url' ). "/page-template/uploads/". $file_name;
+						if(!empty($image_upload)){
+							try{
+							$sqlProfileup = $WP_CON->prepare('SELECT COUNT(*) AS totalProfile FROM wp_user_imguploads WHERE uid_PartnerID = :parnerID');
+							$sqlProfileup->execute(array(':parnerID' => $profileImageID));
+							$resultProfile = $sqlProfileup->fetchObject();
+							}catch(PDOException $ERR){
+								echo $ERR->getMessage();
+								exit();
+							}
+							if($resultProfile->totalProfile > 0) {
+								try {
+								$sqlUpdateprofile = "UPDATE wp_user_imguploads
+												   SET profileURL  = :profileUrl
+												 WHERE uid_PartnerID = :user_id
+											  ";
+								 $statementImage = $WP_CON->prepare($sqlUpdateprofile);
+								 $statementImage	-> bindValue(":profileUrl", $image_upload);
+								 $statementImage	-> bindValue(":user_id", $profileImageID);
+								 $statementImage	-> execute();
+
+								  //$conn = null;        // Disconnect
+								  //echo 'Updated';
+								}
+								catch(PDOException $e) {
+								  echo $e->getMessage();
+								}
+							}
+							echo "File is valid, and was successfully uploaded.\n";
+						}
+						closedir($handle);
+
+					}
+				}
+			}
+		}
+
+	}
+	//echo "<pre>";
+	//    print_r($_FILES);
+	//echo "<pre>";
+	/*$thumbnailProfileName=implode('',$_FILES[ "thumbnailProfile" ][ "name" ]);
+	$thumbnailProfileType=implode('',$_FILES[ "thumbnailProfile" ][ "type" ]);
+	$thumbnailProfileSize=(int) implode('', $_FILES[ "thumbnailProfile" ][ "size" ]);
+	$thumbnailProfileError=(int) implode('',$_FILES[ "thumbnailProfile" ][ "error" ]);
+	if( isset( $thumbnailProfileType ) ){
+				$profileImageID=$_POST['profileImageID'];
+				//var_dump($profileImageID);
+				$validextensions 	= array("jpeg", "jpg", "png");
+				$temporary 			= explode( ".", $thumbnailProfileName);
+				//$temporary 			= $_FILES[ "thumbnailProfile" ][ "name" ];
+				$file_extension 	= end( $temporary );
+				$img_count= count(explode( " ", $thumbnailProfileName));
+				if ( ( ( $thumbnailProfileType == "image/png") || ( $thumbnailProfileType == "image/jpg" ) || ( $thumbnailProfileType == "image/jpeg")
+				) && ( $thumbnailProfileSize < 400000)//Approx. 100kb files can be uploaded.
+				&& in_array($file_extension, $validextensions)) {
+					if ($thumbnailProfileError > 0){
+						echo "Return Code: " . $thumbnailProfileError . "<br/><br/>";
+					}else{
+						if (file_exists(get_template_directory_uri( )."/page-template/uploads/".$thumbnailProfileName)) {
+							echo $thumbnailProfileName . " <span id='invalid'><b>already exists.</b></span> ";
+						}else{
+							$sourcePath = $thumbnailProfileName; // Storing source path of the file in a variable
+							$targetPath = get_template_directory_uri( )."/page-template/uploads/".$thumbnailProfileName; // Target path where file is to be stored
+
+							if ( ! function_exists( 'wp_handle_upload' ) ) {
+								require_once( ABSPATH . 'wp-admin/includes/image.php' );
+								require_once( ABSPATH . 'wp-admin/includes/file.php' );
+								require_once( ABSPATH . 'wp-admin/includes/media.php' );
+							}
+
+							$uploadedfile 	= $_FILES[ "thumbnailProfile" ];
+							$movefile = wp_handle_upload( $_FILES['thumbnailProfile'], array('test_form' => false) );
+							var_dump($movefile);
+							/*$upload_overrides = array( 'test_form' => false, 'unique_filename_callback' => 'my_cust_filename');
+
+							add_filter('upload_dir', 'upload_location_directory');
+							$movefile 		= wp_handle_upload( $uploadedfile, $upload_overrides );
+							var_dump($movefile);
+							remove_filter('upload_dir', 'upload_location_directory');
+							if ( $movefile && ! isset( $movefile[ 'error' ] ) ) {
+
+								try{
+									$sqlProfileup = $WP_CON->prepare('SELECT COUNT(*) AS totalProfile FROM wp_user_imguploads WHERE uid_PartnerID = :parnerID');
+									$sqlProfileup->execute(array(':parnerID' => $profileImageID));
+									$resultProfile = $sqlProfileup->fetchObject();
+								}catch(PDOException $ERR){
+									echo $ERR->getMessage();
+									exit();
+								}
+								if($resultProfile->totalProfile > 0) {
+									try {
+									$sqlUpdateprofile = "UPDATE wp_user_imguploads
+													   SET profileURL  = :profileUrl
+													 WHERE uid_PartnerID = :user_id
+												  ";
+									 $statementImage = $WP_CON->prepare($sqlUpdateprofile);
+									 $statementImage	-> bindValue(":profileUrl", $image_upload);
+									 $statementImage	-> bindValue(":user_id", $profileImageID);
+									 $statementImage	-> execute();
+
+									  //$conn = null;        // Disconnect
+									  //echo 'Updated';
+
+										$current_user = wp_get_current_user();
+										update_option($current_user->ID . "_fb_image_index", 0);
+
+
+									}
+									catch(PDOException $e) {
+									  echo $e->getMessage();
+									}
+								}
+								echo "File is valid, and was successfully uploaded.\n";
+							} else {
+								/**
+								 * Error generated by _wp_handle_upload( )
+								 * @see _wp_handle_upload( ) in wp-admin/includes/file.php
+								 */
+								/*echo $uploadedfile . '<br />';
+								echo $movefile[ 'error' ];
+							}*/
+
+						/*}
+					}
+				}
+				else{
+					echo "<span id='invalid'>***Invalid file Size or Type***<span>";
+				}
+			}
+	/*if(isset($_FILES['thumbnailProfile']['name'])){
+		$count_image = count($_FILES["thumbnailProfile"]["name"]);
+		for($i = 0; $i < $count_image; $i++ ){
+
+			$file_name = $_FILES['thumbnailProfile']['name'][$i];
+			$file_type = $_FILES['thumbnailProfile']['type'][$i];
+			$file_size = $_FILES['thumbnailProfile']['size'][$i];
+			$file_tmp_name = $_FILES['thumbnailProfile']['tmp_name'][$i];
+			$target_dirs = get_template_directory_uri( )."/page-template/uploads/";
+			// echo "this is text". $_POST['text-area'];
+			if($file_name){
+				move_uploaded_file($file_tmp_name, $target_dirs . "$file_name");
+				$folder = $target_dirs;
+				var_dump($folder);
+				if(is_dir($folder)){
+					if($handle = opendir($folder)){
+						// while(($file=readdir($handle)) != false){
+						// 	if($file==='.' || $file ==='..')continue;
+						// }$file_name
+
+						//echo '<img src = "'. get_bloginfo ( 'template_url' ). "/images/tmp_uploads/". $file_name. '" alt = "" width = "150px" height = "150px" alt="..." >';
+
+						closedir($handle);
+
+					}
+				}
+			}
+		}
+
+	}*/
+	die( ); // this is required to return a proper result
+}
+add_action( 'wp_ajax_personalProfileImage', 'personalProfileImage' );
+
+/*
+ * Start: Addition Partner ID field in user profile page
+ *
+*/
+add_action( 'show_user_profile', 'partner_id_profile_fields' );
+add_action( 'edit_user_profile', 'partner_id_profile_fields' );
+
+function partner_id_profile_fields( $user ) {
+	$current_user = get_userdata($user->ID);
+	$customAPIKEY = 'nPhyoUDXwyTrQmB';
+	$customAPIID = '2_7818_yUt32S10y';
+	$postargs = "https://api.ontraport.com/1/objects?objectID=0&sortDir=asc&condition=email%3D'".$current_user->user_email."'&searchNotes=true";
+	$session 		= curl_init( );
+	curl_setopt ( $session, CURLOPT_RETURNTRANSFER, true );
+	curl_setopt ( $session, CURLOPT_URL, $postargs );
+	curl_setopt ( $session, CURLOPT_HTTPHEADER, array(
+	  'Api-Appid:'.$customAPIID,
+	  'Api-Key:'.$customAPIKEY
+	));
+	$response = curl_exec( $session );
+	curl_close( $session );
+	$results = json_decode( $response );
+
+	?>
+
+	<h3>Partner Info</h3>
+
+	<table class="form-table">
+
+		<tr>
+			<th><label for="partner_id">Partner ID</label></th>
+
+			<td>
+				<input type="text" name="partner_id" id="partner_id" value="<?php echo $results->data[0]->id; ?>" class="regular-text" disabled="disabled" /><br />
+				<span class="description">Partner ID cannot be edited.</span>
+			</td>
+		</tr>
+
+	</table>
+<?php }
+
+add_action( 'personal_options_update', 'save_partner_id_fields' );
+add_action( 'edit_user_profile_update', 'save_partner_id_fields' );
+
+function save_partner_id_fields( $user_id ) {
+
+	if ( !current_user_can( 'edit_user', $user_id ) )
+		return false;
+
+	update_usermeta( $user_id, 'partner_id', $_POST['partner_id'] );
+}
+/*
+ * END: Addition Partner ID field in user profile page
+ *
+*/
+?>
+
+<?php
+
+
+//add_filter( 'parse_query', 'restrict_pages_for_custom_users' );
+
+add_action( 'wp', 'restrict_pages_for_custom_login' );
+
+function restrict_pages_for_custom_login() {
+	global $post;
+	if( is_user_logged_in() ) {
+
+		$sub_account_id = get_current_user_id();
+
+
+		$get_sub_account_owner_id = get_user_meta($sub_account_id, 'sub_account_owner_id', true);
+		$get_sub_account_owner_data_cl = get_user_meta( $get_sub_account_owner_id, 'custom_login_page_id', true );
+		$get_sub_account_owner_data_ul = get_user_meta( $get_sub_account_owner_id, 'user_login_page_id', true );
+		$get_sub_account_role = get_userdata( $sub_account_id );
+		$get_sub_account_role_data = $get_sub_account_role->roles;
+
+
+		if(!is_home()){
+
+			if( is_array( $get_sub_account_owner_data_cl ) || is_array( $get_sub_account_owner_data_ul )  ) {
+
+
+				if( in_array( "custom_login", $get_sub_account_role_data ) ) {
+
+
+					if( !in_array( $post->ID, $get_sub_account_owner_data_cl ) ) {
+
+						load_template( dirname( __FILE__ ) . '/404.php' );
+
+						exit;
+					}
+
+				}
+
+				if( in_array( "user_login", $get_sub_account_role_data ) ) {
+
+					if( !in_array( $post->ID, $get_sub_account_owner_data_ul ) ) {
+						load_template( dirname( __FILE__ ) . '/404.php' );
+
+						exit;
+					}
+
+				}
+
+
+
+
+
+			}
+		}
+	}
+
+}
+
+
+add_action('wp_ajax_adddelfunction', 'adddelfunction');
+add_action('wp_ajax_nopriv_adddelfunction','adddelfunction');
+
+add_action('wp_ajax_addUpdatefunction', 'addUpdatefunction');
+add_action('wp_ajax_nopriv_addUpdatefunction','addUpdatefunction');
+
+add_action('wp_ajax_addUserlogin', 'addUserlogin');
+add_action('wp_ajax_nopriv_addUserlogin','addUserlogin');
+
+
+
+
+function adddelfunction(){
+
+	$id = $_POST['id'];
+	wp_delete_user($id);
+	echo 'Data Deleted!';
+	wp_die();
+
+}
+
+function addUpdatefunction(){
+		$id = $_POST['id'];
+	  $fname = $_POST['fname'];
+	  $lname = $_POST['lname'];
+	  $role = $_POST['role'];
+	  $emailUser = $_POST['emailUser'];
+	  $pass = $_POST['pass'];
+	  $mobileNo = $_POST['mobileNo'];
+
+
+
+	echo "<pre>";
+	print_r(get_userdata( $id ));
+	echo "</pre>";
+
+		//$user_id = 1;
+		$user_id = wp_update_user( array( 'ID' => $id, 'first_name' => $fname, 'last_name ' => $lname, 'role' => $role, 'user_email' => $emailUser, 'user_pass' => $pass ) );
+		update_user_meta( $id, 'mobile_number', $mobileNo );
+
+		if ( is_wp_error( $user_id ) ) {
+			echo "There was an error, probably that user doesn't exist.";
+		} else {
+			echo "Success!";
+		}
+
+
+	wp_die();
+}
+
+function addUserlogin(){
+
+
+	// $id = $_POST['id'];
+	// $UserId = array();
+	// for($i=0;$i<count($id);$i++){
+		// $UserId[$i] = $id[$i];
+
+		// update_user_meta( $current_user_id, 'custom_login_page_id', $UserId[$i]);
+
+		// $update_message = "Custom login permission updated!";
+
+		// $test_meta_data = get_user_meta($current_user_id,'custom_login_page_id',true);
+
+
+
+	// }
+	// echo
+	// echo "<pre>";
+	// echo $test_meta_data;
+	// print_r($UserId);
+	// echo "<pre>";
+
+
+	// foreach($id as $key){
+		// echo "<pre>";
+		// update_user_meta( $current_user_id, 'custom_login_page_id', $key);
+		// $update_message = "Custom login permission updated!";
+		// $test_meta_data = get_user_meta($current_user_id,'custom_login_page_id',true);
+		// print_r( $test_meta_data );
+		// echo "</pre>";
+	// }
+
+    // echo "<pre>";
+
+    // echo "</pre>";
+
+	// for($id as $key){
+		// update_user_meta( $current_user_id, 'user_login_page_id', $id);
+        // $test_meta_data = get_user_meta($current_user_id,'user_login_page_id',true);
+
+	// }
+
+
+
+
+	wp_die();
+}
+
+function get_user_member_level(){
+
+
+    if (!class_exists('ontraport_API')) {
+      require_once(TEMPLATEPATH."/class/class-ontraport-api.php");
+    }
+
+	$settings['appId']  = '2_7818_AFzuWztKz';
+	$settings['apiKey'] = 'fY4Zva90HP8XFx3';
+	$current_user = wp_get_current_user();
+	$ontraport = new ontraport_API( $settings['appId'], $settings['apiKey'] );
+	$email = $current_user->user_email;
+	$query = 'email=\''.$email.'\'';
+	$owner = $ontraport->search_contacts($query);
+
+    return $owner[0]->f1548;
+
+}
+
+function get_user_member_partner_id($uid = ""){
+
+
+    if (!class_exists('ontraport_API')) {
+      require_once(TEMPLATEPATH."/class/class-ontraport-api.php");
+    }
+
+	$settings['appId']  = '2_7818_AFzuWztKz';
+	$settings['apiKey'] = 'fY4Zva90HP8XFx3';
+
+	if($uid==""){
+
+	$current_user = wp_get_current_user();
+
+	}else{
+
+	$current_user = get_user_by( 'id', $uid );
+
+	}
+
+
+	$ontraport = new ontraport_API( $settings['appId'], $settings['apiKey'] );
+	$email = $current_user->user_email;
+	$query = 'email=\''.$email.'\'';
+	$owner = $ontraport->search_contacts($query);
+
+    return $owner[0]->id;
+
+}
 ?>
